@@ -1,6 +1,6 @@
 #===================================================================
 #                 Visualizer BFS 8PUZZEL
-# Link GitHub:
+# Link GitHub: https://github.com/NguyenTrungKien1805/8puzzel_visualizer
 #===================================================================
 import flet as ft
 from collections import deque
