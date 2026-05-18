@@ -33,4 +33,4 @@ Dự án này cài đặt và trực quan hóa sự khác biệt cốt lõi gi�
 ### 2. Cài đặt thư viện cần thiết
 Mở Terminal/PowerShell tại thư mục dự án (kích hoạt môi trường ảo `.venv` nếu có) và chạy lệnh cài đặt thư viện `flet`:
 ```bash
-pip install flet
+pip install flet==0.22.1
