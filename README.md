@@ -57,7 +57,7 @@ Hệ thống máy tính của bạn cần cài đặt sẵn **Python 3.8** hoặ
 ```bash
 python --version
 
-### 2. Cài đặt thư viện Flet
+2. Cài đặt thư viện Flet
 Flet là framework hỗ trợ xây dựng giao diện Flutter bằng mã Python. Mở Terminal / Command Prompt của bạn lên và thực thi lệnh gõ:
 
 Bash
