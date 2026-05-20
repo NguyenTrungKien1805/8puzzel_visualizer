@@ -1,5 +1,5 @@
 # ===================================================================
-#                 Visualizer BFS/DFS/IDDFS 8PUZZEL - FULL OPTIMIZED
+#                 Visualizer BFS/DFS/IDDFS 8PUZZEL
 # Link GitHub: https://github.com/NguyenTrungKien1805/8puzzel_visualizer
 # ===================================================================
 
