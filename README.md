@@ -1,64 +1,348 @@
-# 🧩 8-Puzzle Algorithm Visualizer (Bản Tối Ưu Hóa Hệ Thống)
+# 8 Puzzle Algorithm Visualizer
 
-Một ứng dụng mô phỏng trực quan (Visualizer) các thuật toán tìm kiếm không gian trạng thái phổ biến áp dụng vào trò chơi trí tuệ trí tuệ nhân tạo kinh điển: **8-Puzzle (Trò chơi trượt 8 số)**. 
+Ứng dụng trực quan hóa thuật toán tìm kiếm trên bài toán 8 Puzzle bằng Python + Flet.
 
-Dự án được xây dựng hoàn toàn bằng ngôn ngữ **Python 3** kết hợp với framework giao diện hiện đại **Flet (Flutter engine cho Python)**. Ứng dụng mang lại một trải nghiệm mượt mà với giao diện Dark Mode, giúp người học dễ dàng quan sát cách các cấu trúc dữ liệu như `Queue`, `Stack` và các tập hợp `Reached (Visited)` vận hành trên thực tế theo từng bước (Step-by-step).
+Dự án hỗ trợ mô phỏng hoạt động của nhiều thuật toán AI/Search khác nhau như:
 
-👉 **Link Kho Lưu Trữ GitHub:** [https://github.com/NguyenTrungKien1805/8puzzel_visualizer](https://github.com/NguyenTrungKien1805/8puzzel_visualizer)
+* BFS
+* DFS
+* IDDFS
+* UCS
+* Greedy Best First Search
+* A*
+* IDA*
 
----
+Kèm:
 
-## 🚀 Các Tính Năng Core Của Ứng Dụng
-
-### 1. Trực Quan Hóa Bàn Cờ Sinh Động (Grid Board Visualizer)
-* Hệ thống lưới $3 \times 3$ tự động cập nhật trạng thái các ô số theo thời gian thực.
-* Ô trống (`0`) được thiết kế ẩn text và chuyển màu nền sang xám (`grey`) để người dùng dễ dàng định vị tiêu điểm di chuyển, các ô số còn lại mang màu xanh bộ đội/hiện đại (`blue`).
-
-### 2. Tích Hợp 4 Biến Thể Thuật Toán Tìm Kiếm Không Gian
-Dự án không chỉ cài đặt thuật toán cơ bản mà chia nhỏ thành các hướng tiếp cận cài đặt thực tế để so sánh:
-* **Hàm 1: BFS (Check Đích Lúc POP + Thêm Reached Lúc POP):** Cách tiếp cận lý thuyết cơ bản. Node được kiểm tra xem có phải là Goal hay không chỉ khi nó được đưa ra khỏi hàng đợi `Frontier`.
-* **Hàm 2: BFS (Check Đích Lúc PUSH + Thêm Reached NGAY):** Phiên bản tối ưu hóa cực hạn của BFS. Hệ thống kiểm tra điều kiện Goal ngay khi sinh Node con (Push) và đưa thẳng vào tập `Reached`. Giảm thiểu tối đa số lượng Node rác sinh ra trong hàng đợi.
-* **Hàm 3: DFS (Tìm Kiếm Theo Chiều Sâu):** Sử dụng cấu trúc `Stack` (`pop` ở cuối danh sách). Khám phá các nhánh trạng thái sâu nhất trước khi quay lui.
-* **Hàm 4: IDDFS (Tìm Kiếm Sâu Dần - Iterative Deepening DFS):** Giải pháp tối ưu kết hợp: Vừa đảm bảo tìm ra đường đi ngắn nhất (giống BFS) vừa tiết kiệm bộ nhớ không gian lưu trữ (giống DFS) bằng cách giới hạn độ sâu tịnh tiến liên tục từ tầng $0 \rightarrow 50$.
-
-### 3. Cơ Chế Trộn Hướng Ngẫu Nhiên (`Directions Shuffle`)
-* Thay vì cố định thứ tự quét hàng xóm là `[Lên, Xuống, Trái, Phải]`, tại mỗi cấu trúc sinh Node kế tiếp (`next_states`), mảng hướng đi sẽ được xáo trộn bằng hàm `shuffle()`.
-* **Ý nghĩa:** Giúp thuật toán DFS không bị "giam cầm" cố định ở một nhánh vô tận, tạo ra sự đột biến ngẫu nhiên về số bước giải qua mỗi lần bấm nút "Giải".
-
-### 4. Bộ Điều Khiển Đa Tiến Trình (Playback Controller)
-* **Giải 8 - Puzzle:** Kích hoạt luồng chạy thuật toán, đóng băng trạng thái chờ và kết xuất dữ liệu logs đồng thời.
-* **Prev / Next:** Di chuyển thủ công lùi hoặc tiến 1 bước trên cấu trúc cây đường đi đã tìm thấy.
-* **Play / Pause:** Sử dụng cơ chế bất đồng bộ `asyncio.sleep(0.5)` để tự động "trình chiếu" bàn cờ mượt mà với tốc độ 500ms/bước.
-
-### 5. Hệ Thống Đồng Hồ Đếm Bước Tối Giản
-* Ô hiển thị tiến trình được thiết kế cô đọng theo định dạng phân số: `Hiện tại / Tổng số bước` (Ví dụ: `0 / 14`, `7 / 14`). Giúp người xem nắm bắt ngay lập tức độ dài của chuỗi hành động tối ưu.
-
-### 6. Nhật Ký Kết Xuất Kép (Dual Logs System)
-* **Khung Logs Hệ Thống (Phía Trên):** Mô phỏng từng bước lặp `STEP X`. Xuất dữ liệu bảng biểu trực quan gồm 3 cột: `NODE` đang xét, trạng thái toàn bộ `FRONTIER` (Hàng đợi/Ngăn xếp), và tập `REACHED` tại thời điểm đó.
-* **Sơ Đồ Dịch Chuyển Ma Trận (Phía Dưới):** In ra toàn bộ chuỗi ma trận tĩnh từ lúc bắt đầu cho tới lúc kết thúc. Đi kèm chỉ dẫn bằng chữ cụ thể như: `Bước 1 (Ô trống dịch chuyển SANG TRÁI)`, `Bước 2 (Ô trống dịch chuyển LÊN (UP))`...
+* Giao diện trực quan
+* Animation từng bước
+* Log cấu trúc dữ liệu
+* Frontier / Reached
+* Phân tích đường đi
+* Hướng di chuyển của ô trống
 
 ---
 
-## 📊 Bảng So Sánh Đặc Tính Thuật Toán Trong Ứng Dụng
+# Demo giao diện
 
-| Thuật toán | Cấu trúc dữ liệu | Thời điểm check Đích | Tính Tối Ưu (Đường đi ngắn nhất) | Sức chịu đựng số lượng Node | Ảnh hưởng bởi `Shuffle` |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Hàm 1: BFS (Pop)** | `deque` (Queue - FIFO) | Khi lấy ra khỏi Queue | **Có** | Trung bình (Tốn RAM) | Ít (Chỉ đổi thứ tự Log) |
-| **Hàm 2: BFS (Push)**| `deque` (Queue - FIFO) | Khi vừa sinh ra | **Có** | Rất tốt (Tiết kiệm RAM) | Ít (Chỉ đổi thứ tự Log) |
-| **Hàm 3: DFS** | `deque` (Stack - LIFO) | Khi lấy ra khỏi Stack | **Không** | Kém (Dễ thám hiểm vô tận)| **Cực kỳ lớn** (Thay đổi số bước đột biến) |
-| **Hàm 4: IDDFS** | `deque` lặp tầng depth | Khi lấy ra khỏi Stack | **Có** | Tốt (Tiết kiệm RAM) | Trung bình |
+## Board Puzzle + Điều khiển
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/3ce55096-1ebb-4b01-af0c-97783b9f8270" />
 
 ---
 
-## 🛠 Hướng Dẫn Cài Đặt Chi Tiết
+# Công nghệ sử dụng
 
-### 1. Yêu cầu tiên quyết
-Hệ thống máy tính của bạn cần cài đặt sẵn **Python 3.8** hoặc các phiên bản cao hơn. Bạn có thể kiểm tra bằng lệnh:
+| Thành phần       | Công nghệ               |
+| ---------------- | ----------------------- |
+| Ngôn ngữ         | Python                  |
+| GUI Framework    | Flet                    |
+| Cấu trúc dữ liệu | deque, heapq            |
+| AI Search        | BFS, DFS, UCS, A*, IDA* |
+| Heuristic        | Manhattan Distance      |
+
+---
+
+# Thuật toán được hỗ trợ
+
+| Thuật toán | Mô tả                              |
+| ---------- | ---------------------------------- |
+| BFS        | Tìm kiếm theo chiều rộng           |
+| DFS        | Tìm kiếm theo chiều sâu            |
+| IDDFS      | DFS tăng dần độ sâu                |
+| UCS        | Uniform Cost Search                |
+| Greedy     | Tham lam theo heuristic            |
+| A*         | Tối ưu bằng g(n)+h(n)              |
+| IDA*       | A* kết hợp DFS Iterative Deepening |
+
+---
+
+# Heuristic sử dụng
+
+Dự án dùng:
+
+## Manhattan Distance
+
+[
+h(n)=\sum |x_1-x_2|+|y_1-y_2|
+]
+
+h(n)=\sum |x_1-x_2|+|y_1-y_2|
+
+---
+
+# Công thức A*
+
+[
+f(n)=g(n)+h(n)
+]
+
+f(n)=g(n)+h(n)
+
+Trong đó:
+
+| Thành phần | Ý nghĩa                  |
+| ---------- | ------------------------ |
+| g(n)       | Chi phí thực tế từ Start |
+| h(n)       | Heuristic Manhattan      |
+| f(n)       | Tổng chi phí dự đoán     |
+
+---
+
+# IDA*
+
+IDA* hoạt động bằng:
+
+* DFS
+* Threshold
+* Heuristic Manhattan
+* Iterative Deepening
+
+Node sẽ bị cắt nếu:
+
+[
+f(n) > threshold
+]
+
+f(n)>threshold
+
+---
+
+# Cấu trúc dự án
+
+```text
+8puzzle_visualizer/
+│
+├── main.py
+├── README.md
+└── requirements.txt
+```
+
+---
+
+# Cài đặt
+
+## 1. Clone project
+
 ```bash
-python --version
+git clone https://github.com/your-username/8puzzle_visualizer.git
+```
 
-2. Cài đặt thư viện Flet
-Flet là framework hỗ trợ xây dựng giao diện Flutter bằng mã Python. Mở Terminal / Command Prompt của bạn lên và thực thi lệnh gõ:
+---
 
-Bash
-pip install flet==0.22.1
+## 2. Di chuyển vào thư mục
+
+```bash
+cd 8puzzle_visualizer
+```
+
+---
+
+## 3. Cài thư viện
+
+## [Flet Official Website](https://flet.dev?utm_source=chatgpt.com)
+
+```bash
+pip install flet=0.22.1
+```
+
+---
+
+# Chạy chương trình
+
+```bash
+python main.py
+```
+
+---
+
+# Giao diện chính
+
+## Khu vực bên trái
+
+| Thành phần   | Chức năng        |
+| ------------ | ---------------- |
+| Dropdown     | Chọn thuật toán  |
+| Board Puzzle | Hiển thị ma trận |
+| Prev         | Quay lui         |
+| Next         | Sang bước tiếp   |
+| Play         | Chạy animation   |
+| Solve        | Giải bài toán    |
+
+---
+
+## Khu vực bên phải
+
+| Thành phần  | Chức năng          |
+| ----------- | ------------------ |
+| Search Logs | Nhật ký thuật toán |
+| Visual Path | Đường đi chi tiết  |
+
+---
+
+# Chức năng nổi bật
+
+## 1. Hiển thị Frontier
+
+Ví dụ:
+
+```text
+FRONTIER:
+[1 2 3 4 5 6 7 0 8]
+[1 2 3 4 5 6 0 7 8]
+```
+
+---
+
+## 2. Hiển thị Reached
+
+```text
+REACHED:
+[1 2 3 4 0 6 7 5 8]
+```
+
+---
+
+## 3. Animation tự động
+
+* Play
+* Pause
+* Next
+* Prev
+
+---
+
+## 4. Log cực chi tiết
+
+Hiển thị:
+
+* g(n)
+* h(n)
+* f(n)
+* threshold
+* frontier
+* reached
+* generated children
+
+---
+
+# Ví dụ log A*
+
+```text
+STEP 4 | (g: 2, h: 3, f: 5)
+
+1 2 3
+4 5 6
+0 7 8
+
+CÁC NODE CON:
++ Sinh ra ...
+```
+
+---
+
+# Ví dụ log IDA*
+
+```text
+[CUT-OFF] f = 7 vượt threshold = 5
+```
+
+---
+
+# Kiến thức AI/Search được minh họa
+
+Dự án phù hợp để học:
+
+* Artificial Intelligence
+* Search Algorithms
+* State Space Search
+* Heuristic Search
+* Informed Search
+* Uninformed Search
+* Graph Search
+* Tree Search
+
+---
+
+# So sánh thuật toán
+
+| Thuật toán | Tối ưu | Heuristic | Bộ nhớ     |
+| ---------- | ------ | --------- | ---------- |
+| BFS        | Có     | Không     | Cao        |
+| DFS        | Không  | Không     | Thấp       |
+| IDDFS      | Có     | Không     | Thấp       |
+| UCS        | Có     | Không     | Cao        |
+| Greedy     | Không  | Có        | Trung bình |
+| A*         | Có     | Có        | Cao        |
+| IDA*       | Có     | Có        | Thấp       |
+
+---
+
+# Ý tưởng hoạt động
+
+## BFS
+
+Dùng Queue:
+
+```text
+FIFO
+```
+
+---
+
+## DFS
+
+Dùng Stack:
+
+```text
+LIFO
+```
+
+---
+
+## UCS
+
+Ưu tiên:
+
+* cost nhỏ nhất
+
+---
+
+## Greedy
+
+Ưu tiên:
+
+* heuristic nhỏ nhất
+
+[
+f(n)=h(n)
+]
+
+f(n)=h(n)
+
+---
+
+## A*
+
+Ưu tiên:
+
+* tổng chi phí nhỏ nhất
+
+[
+f(n)=g(n)+h(n)
+]
+
+f(n)=g(n)+h(n)
+
+---
+
+## IDA*
+
+* DFS
+* Threshold
+* Iterative Deepening
+
+
+
+
+
