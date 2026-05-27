@@ -1,11 +1,12 @@
-# ===================================================================
-#                 Visualizer BFS/DFS/IDDFS 8PUZZEL
-# Link GitHub: https://github.com/NguyenTrungKien1805/8puzzel_visualizer
-# ===================================================================
+# ======================================================================================================
+#                                 Visualizer BFS/DFS/IDDFS/A* 8PUZZEL
+# Link GITHUB: https://github.com/NguyenTrungKien1805/8puzzel_visualizer/edit/main/8puzzel_visualizer.py
+# ======================================================================================================
 
 from random import shuffle
 import flet as ft
 from collections import deque
+import heapq
 import copy
 import asyncio
 
@@ -43,6 +44,23 @@ def find_zero(state):
                 return i, j
     return -1, -1
 
+def find_goal_pos(val):
+    for r in range(3):
+        for c in range(3):
+            if GOAL[r][c] == val:
+                return r, c
+    return -1, -1
+
+def calculate_manhattan(board):
+    """Tính khoảng cách Manhattan dựa trên ma trận GOAL toàn cục"""
+    total_h = 0
+    for r in range(3):
+        for c in range(3):
+            val = board[r][c]
+            if val != 0:  # Bỏ qua ô trống (số 0)
+                goal_r, goal_c = find_goal_pos(val)
+                total_h += abs(r - goal_r) + abs(c - goal_c)
+    return total_h
 
 def next_states(state):
     x, y = find_zero(state)
@@ -121,7 +139,6 @@ def bfs_check_on_pop(start, goal):
     bfs_log += "\nFAILURE\n"
     return None, bfs_log
 
-
 # ===================================================
 # HÀM 2: CHECK LÚC SINH (PUSH) + NHÉT THẲNG VÀO REACHED LUÔN
 # ===================================================
@@ -177,7 +194,6 @@ def bfs_check_on_push_and_reached(start, goal):
     bfs_log += "\nFAILURE\n"
     return None, bfs_log
 
-
 # ===================================================
 # HÀM 3: DFS
 # ===================================================
@@ -231,58 +247,962 @@ def dfs(start, goal):
 # HÀM 4: IDDFS (Iterative Deepening DFS)
 # ===================================================
 def iddfs(start, goal):
-    log_output = "=== IDDFS VERSION (TỐI ƯU BFS + DFS) ===\n\n"
+    log_output = "=== IDDFS SEARCH LOG (TỐI ƯU GIAO DIỆN) ===\n"
     step_count = 0
     max_depth_limit = 50
 
     for depth in range(max_depth_limit):
-        log_output += f"--- ĐANG QUÉT Ở ĐỘ SÂU (DEPTH LIMIT): {depth} ---\n"
+        log_output += f"\n============================================================\n"
+        log_output += f" ĐANG QUÉT Ở ĐỘ SÂU GIỚI HẠN (DEPTH LIMIT): {depth}\n"
+        log_output += f"============================================================\n"
 
+        # Stack lưu tuple dạng: (current_board, path, current_depth)
         stack = deque()
         stack.append((start, [start], 0))
 
+        # Tập reached lưu các trạng thái ĐÃ POP RA XÉT ở lượt quét này
         reached = set()
-        reached.add(to_tuple(start))
 
         while stack:
+            # 1. LẤY NODE RA KHỎI STACK ĐỂ XÉT (LIFO)
             current, path, current_depth = stack.pop()
+            current_tuple = to_tuple(current)
+
+            # Cơ chế chống lặp khi POP (Tránh xét lại cùng 1 độ sâu hoặc sâu hơn)
+            if current_tuple in reached:
+                continue
+
             step_count += 1
+            # Thêm vào reached ngay khi lấy ra xét
+            reached.add(current_tuple)
 
-            node_text = format_state(current)
-            frontier_text = "".join(format_state(item[0]) + f"\n(D:{item[2]})\n---\n" for item in stack)
-            reached_text = "".join(format_state([list(row) for row in r]) + "\n---\n" for r in reached)
+            # 2. IN NODE HIỆN TẠI LÊN ĐẦU STEP
+            log_output += f"\n{'-' * 60}\n"
+            log_output += f" STEP {step_count} | NODE HIỆN TẠI (Độ sâu nút: {current_depth} / Giới hạn: {depth})\n"
+            log_output += f"{'-' * 60}\n"
+            log_output += format_state(current) + "\n"
+            log_output += f"{'-' * 60}\n"
 
-            node_lines = node_text.splitlines()
-            frontier_lines = frontier_text.splitlines()
-            reached_lines = reached_text.splitlines()
-
-            max_lines = max(len(node_lines), len(frontier_lines), len(reached_lines))
-            while len(node_lines) < max_lines: node_lines.append("")
-            while len(frontier_lines) < max_lines: frontier_lines.append("")
-            while len(reached_lines) < max_lines: reached_lines.append("")
-
-            log_output += f"\nSTEP {step_count} (Depth: {current_depth})\nNODE".ljust(25) + "FRONTIER(STACK)".ljust(
-                35) + "REACHED\n" + "=" * 90 + "\n"
-            for i in range(max_lines):
-                log_output += node_lines[i].ljust(20) + frontier_lines[i].ljust(35) + reached_lines[i] + "\n"
-
+            # Kiểm tra điều kiện Đích ngay khi POP
             if current == goal:
-                log_output += f"\n🎉 TÌM THẤY ĐÍCH TẠI ĐỘ SÂU: {current_depth} (TỔNG SỐ BƯỚC DUYỆT: {step_count})\n\n"
+                log_output += f"\n🎉 TÌM THẤY ĐÍCH TẠI ĐỘ SÂU: {current_depth}!\n"
+                log_output += f"- Tổng số lượt xét qua các tầng: {step_count}\n"
+                log_output += f"- Số bước đi tối ưu: {len(path) - 1}\n\n"
                 return path, log_output
 
+            # 3. SINH CÁC TRẠNG THÁI CON (Nếu chưa vượt quá giới hạn độ sâu hiện tại)
+            generated_children = []
             if current_depth < depth:
+                # Với DFS/IDDFS, nếu muốn thứ tự duyệt nhánh giống như code cũ,
+                # ta giữ nguyên hướng sinh con bình thường
                 for nxt in next_states(current):
                     nxt_tuple = to_tuple(nxt)
 
                     if nxt_tuple not in reached:
-                        reached.add(nxt_tuple)
                         stack.append((nxt, path + [nxt], current_depth + 1))
 
-        log_output += f"-> Không tìm thấy ở độ sâu {depth}. Tăng độ sâu lên...\n\n"
+                        # Lưu log chuỗi 1 dòng cho node con
+                        nxt_str = " ".join(" ".join(str(cell) for cell in row) for row in nxt)
+                        generated_children.append(f"   + Sinh ra: [{nxt_str}] -> Depth: {current_depth + 1}")
+
+            # In danh sách trạng thái con vừa sinh
+            log_output += " CÁC TRẠNG THÁI CON VỪA SINH RA ĐƯỢC ĐẨY VÀO STACK:\n"
+            if not generated_children:
+                if current_depth >= depth:
+                    log_output += "   (Không sinh thêm vì ĐÃ ĐẠT GIỚI HẠN ĐỘ SÂU của tầng này)\n"
+                else:
+                    log_output += "   (Không có node con nào hợp lệ / Tất cả đã nằm trong Reached)\n"
+            else:
+                for child in generated_children:
+                    log_output += child + "\n"
+            log_output += f"{'-' * 60}\n"
+
+            # 4. ĐỊNH DẠNG FRONTIER (STACK - LIFO)
+            log_output += " FRONTIER STACK (Các trạng thái chờ duyệt - Cuối Stack sẽ ra trước):\n"
+            if not stack:
+                log_output += "   (Trống)\n"
+            else:
+                # In từ cuối danh sách lên đầu để thể hiện đúng tính chất LIFO của Stack
+                for item in reversed(stack):
+                    st_board, _, st_depth = item
+                    st_str = " ".join(" ".join(str(cell) for cell in row) for row in st_board)
+                    log_output += f"   > [{st_str}] -> Depth: {st_depth}\n"
+            log_output += f"{'-' * 60}\n"
+
+            # 5. ĐỊNH DẠNG REACHED
+            log_output += " REACHED (Các trạng thái đã POP ra xét ở tầng này):\n"
+            for r_tuple in reached:
+                r_str = " ".join(" ".join(str(cell) for cell in row) for row in r_tuple)
+                log_output += f"   > [{r_str}]\n"
+            log_output += f"{'=' * 60}\n"
+
+        log_output += f"-> Không tìm thấy ở độ sâu {depth}. Tăng độ sâu lên...\n"
 
     log_output += "\nTHẤT BẠI: Vượt quá giới hạn độ sâu cho phép.\n"
     return None, log_output
 
+
+# ===================================================
+# HÀM 5: UCS
+# ===================================================
+def count_misplaced_tiles(current, goal):
+    """Hàm đếm số ô sai vị trí so với trạng thái đích (không tính ô trống 0)"""
+    count = 0
+    for r in range(len(current)):
+        for c in range(len(current[0])):
+            if current[r][c] != 0 and current[r][c] != goal[r][c]:
+                count += 1
+    return count
+
+
+def ucs(start, goal):
+    log_output = "=== UCS SEARCH LOG (g = tổng số ô sai cộng dồn) ===\n"
+    step_count = 0
+
+    # Chi phí ban đầu tại nút gốc bằng số ô sai của chính nó
+    g_start = count_misplaced_tiles(start, goal)
+
+    frontier_heap = []
+    # Heap: (g_cost_tich_luy, current_board, path)
+    heapq.heappush(frontier_heap, (g_start, start, [start]))
+
+    # Tập chứa các trạng thái đã POP ra xét kèm g_cost tối ưu nhất
+    reached = {}
+
+    while frontier_heap:
+        # 1. LẤY NODE CÓ G_COST CỘNG DỒN NHỎ NHẤT RA ĐỂ XÉT
+        g, current, path = heapq.heappop(frontier_heap)
+        current_tuple = to_tuple(current)
+
+        # Nếu node này trùng và có chi phí g_cost tích lũy tệ hơn thì bỏ qua
+        if current_tuple in reached and reached[current_tuple] <= g:
+            continue
+
+        step_count += 1
+
+        # CẬP NHẬT VÀO REACHED (Node này chính thức được chốt chi phí)
+        reached[current_tuple] = g
+
+        # 2. IN NODE HIỆN TẠI LÊN ĐẦU STEP
+        log_output += f"\n{'=' * 60}\n"
+        log_output += f" STEP {step_count} | NODE HIỆN TẠI (g_cost tích lũy: {g})\n"
+        log_output += f"{'=' * 60}\n"
+        log_output += format_state(current) + "\n"
+        log_output += f"{'-' * 60}\n"
+
+        # Kiểm tra điều kiện Đích ngay khi POP theo chuẩn UCS
+        if current == goal:
+            log_output += f"\n🎉 TÌM THẤY ĐÍCH!\n- Tổng số lượt xét: {step_count}\n- Tổng g_cost tích lũy tối ưu: {g}\n\n"
+            return path, log_output
+
+        # 3. SINH CÁC TRẠNG THÁI CON (CỘNG DỒN TỪ CHA)
+        generated_children = []
+        for nxt in next_states(current):
+            nxt_tuple = to_tuple(nxt)
+
+            # Tính số ô sai của riêng nút con này
+            nxt_misplaced = count_misplaced_tiles(nxt, goal)
+
+            # LOGIC CỦA BẠN: g_cost của con = g_cost của cha + số ô sai của con
+            next_g = g + nxt_misplaced
+
+            if nxt_tuple not in reached or next_g < reached[nxt_tuple]:
+                heapq.heappush(frontier_heap, (next_g, nxt, path + [nxt]))
+
+                nxt_str = " ".join(" ".join(str(cell) for cell in row) for row in nxt)
+                generated_children.append(
+                    f"   + Sinh ra: [{nxt_str}] -> Ô sai hiện tại: {nxt_misplaced} | g tích lũy (cha+con): {next_g}"
+                )
+
+        # In danh sách các node con vừa mới sinh ra ở bước này
+        log_output += " CÁC TRẠNG THÁI CON VỪA SINH RA ĐƯỢC THÊM VÀO FRONTIER:\n"
+        if not generated_children:
+            log_output += "   (Không có node con nào hợp lệ hoặc tất cả đã nằm trong Reached với g tốt hơn)\n"
+        else:
+            for child in generated_children:
+                log_output += child + "\n"
+        log_output += f"{'-' * 60}\n"
+
+        # 4. ĐỊNH DẠNG FRONTIER
+        log_output += " FRONTIER HIỆN TẠI (Sắp xếp theo g tích lũy tăng dần):\n"
+
+        sorted_frontier = sorted(list(frontier_heap), key=lambda x: x[0])
+        if not sorted_frontier:
+            log_output += "   (Trống)\n"
+        else:
+            for item in sorted_frontier:
+                g_item, board_item, _ = item
+                f_str = " ".join(" ".join(str(cell) for cell in row) for row in board_item)
+                log_output += f"   > [{f_str}] -> g tích lũy: {g_item}\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # 5. ĐỊNH DẠNG REACHED
+        log_output += " REACHED (Các trạng thái đã duyệt):\n"
+        for r_tuple, g_cost in reached.items():
+            r_str = " ".join(" ".join(str(cell) for cell in row) for row in r_tuple)
+            log_output += f"   > [{r_str}] -> g tích lũy tốt nhất: {g_cost}\n"
+        log_output += f"{'=' * 60}\n"
+
+    log_output += "\nTHẤT BẠI: Không tìm được đường đi đến đích.\n"
+    return None, log_output
+
+# ===================================================
+# HÀM 6: Greedy
+# ===================================================
+def greedy(start, goal):
+    log_output = "=== GREEDY SEARCH LOG ===\n"
+
+    step_count = 0
+    counter = 0
+
+    # =========================================================
+    # FRONTIER = Heap ưu tiên node có h nhỏ nhất
+    # Item trong heap:
+    # (h_cost, counter, current_board, path)
+    # =========================================================
+    frontier_heap = []
+
+    # Set dùng để tránh node bị thêm trùng vào frontier
+    frontier_set = set()
+
+    # Reached = các trạng thái đã được POP ra xét
+    reached = set()
+
+    # =========================================================
+    # PUSH NODE START
+    # =========================================================
+    h_start = calculate_manhattan(start)
+
+    heapq.heappush(
+        frontier_heap,
+        (h_start, counter, start, [start])
+    )
+
+    frontier_set.add(to_tuple(start))
+
+    # =========================================================
+    # MAIN LOOP
+    # =========================================================
+    while frontier_heap:
+
+        # -----------------------------------------------------
+        # LẤY NODE CÓ h NHỎ NHẤT
+        # -----------------------------------------------------
+        h, _, current, path = heapq.heappop(frontier_heap)
+
+        current_tuple = to_tuple(current)
+
+        # Xóa khỏi frontier_set vì đã bị pop
+        frontier_set.remove(current_tuple)
+
+        # Nếu đã duyệt rồi thì bỏ qua
+        if current_tuple in reached:
+            continue
+
+        # Đánh dấu đã duyệt
+        reached.add(current_tuple)
+
+        step_count += 1
+        g = len(path) - 1
+
+        # =====================================================
+        # LOG NODE HIỆN TẠI
+        # =====================================================
+        log_output += f"\n{'=' * 60}\n"
+        log_output += f" STEP {step_count} | NODE HIỆN TẠI (Step: {g}, h: {h})\n"
+        log_output += f"{'=' * 60}\n"
+
+        log_output += format_state(current) + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # CHECK GOAL
+        # =====================================================
+        if current == goal:
+
+            log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
+            log_output += f"- Tổng số lượt xét: {step_count}\n"
+            log_output += f"- Số bước đi tìm được: {g}\n"
+
+            return path, log_output
+
+        # =====================================================
+        # SINH NODE CON
+        # =====================================================
+        generated_children = []
+
+        for nxt in next_states(current):
+
+            nxt_tuple = to_tuple(nxt)
+
+            # -------------------------------------------------
+            # Chỉ thêm nếu:
+            # - chưa nằm trong reached
+            # - chưa nằm trong frontier
+            # -------------------------------------------------
+            if (
+                nxt_tuple not in reached
+                and nxt_tuple not in frontier_set
+            ):
+
+                next_h = calculate_manhattan(nxt)
+                next_g = g + 1
+
+                counter += 1
+
+                heapq.heappush(
+                    frontier_heap,
+                    (
+                        next_h,
+                        counter,
+                        nxt,
+                        path + [nxt]
+                    )
+                )
+
+                frontier_set.add(nxt_tuple)
+
+                nxt_str = " ".join(
+                    " ".join(str(cell) for cell in row)
+                    for row in nxt
+                )
+
+                generated_children.append(
+                    f"   + Sinh ra: [{nxt_str}] -> Step: {next_g}, h: {next_h}"
+                )
+
+        # =====================================================
+        # LOG NODE CON
+        # =====================================================
+        log_output += " CÁC TRẠNG THÁI CON VỪA SINH RA:\n"
+
+        if not generated_children:
+            log_output += "   (Không có node hợp lệ)\n"
+        else:
+            for child in generated_children:
+                log_output += child + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG FRONTIER
+        # =====================================================
+        log_output += " FRONTIER HIỆN TẠI:\n"
+
+        sorted_frontier = sorted(frontier_heap, key=lambda x: x[0])
+
+        if not sorted_frontier:
+            log_output += "   (Trống)\n"
+
+        else:
+            for item in sorted_frontier:
+
+                h_item, _, board_item, path_item = item
+
+                g_item = len(path_item) - 1
+
+                board_str = " ".join(
+                    " ".join(str(cell) for cell in row)
+                    for row in board_item
+                )
+
+                log_output += (
+                    f"   > [{board_str}] "
+                    f"-> Step: {g_item}, h: {h_item}\n"
+                )
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG REACHED
+        # =====================================================
+        log_output += " REACHED:\n"
+
+        for r in reached:
+
+            r_str = " ".join(
+                " ".join(str(cell) for cell in row)
+                for row in r
+            )
+
+            log_output += f"   > [{r_str}]\n"
+
+        log_output += f"{'=' * 60}\n"
+
+    # =========================================================
+    # KHÔNG TÌM THẤY
+    # =========================================================
+    log_output += "\n❌ THẤT BẠI: Không tìm được đường đi.\n"
+
+    return None, log_output
+
+# ===================================================
+# HÀM 7: A*
+# ===================================================
+def a_star(start, goal):
+
+    log_output = "=== A* SEARCH LOG ===\n"
+
+    step_count = 0
+    counter = 0
+
+    # =========================================================
+    # FRONTIER = Priority Queue
+    # Item:
+    # (f, counter, g, h, board, path)
+    # =========================================================
+    frontier_heap = []
+
+    frontier_set = set()
+
+    # =========================================================
+    # COST SO FAR
+    # Lưu g nhỏ nhất của mỗi trạng thái
+    # =========================================================
+    cost_so_far = {}
+
+    # =========================================================
+    # START NODE
+    # =========================================================
+    start_h = calculate_manhattan(start)
+    start_g = 0
+    start_f = start_g + start_h
+
+    heapq.heappush(
+        frontier_heap,
+        (
+            start_f,
+            counter,
+            start_g,
+            start_h,
+            start,
+            [start]
+        )
+    )
+
+    frontier_set.add(to_tuple(start))
+
+    cost_so_far[to_tuple(start)] = 0
+
+    # =========================================================
+    # MAIN LOOP
+    # =========================================================
+    while frontier_heap:
+
+        # -----------------------------------------------------
+        # POP NODE CÓ f NHỎ NHẤT
+        # -----------------------------------------------------
+        (
+            f,
+            _,
+            g,
+            h,
+            current,
+            path
+        ) = heapq.heappop(frontier_heap)
+
+        current_tuple = to_tuple(current)
+
+        if current_tuple in frontier_set:
+            frontier_set.remove(current_tuple)
+
+        step_count += 1
+
+        # =====================================================
+        # LOG NODE HIỆN TẠI
+        # =====================================================
+        log_output += f"\n{'=' * 60}\n"
+
+        log_output += (
+            f" STEP {step_count} | "
+            f"(g: {g}, h: {h}, f: {f})\n"
+        )
+
+        log_output += f"{'=' * 60}\n"
+
+        log_output += format_state(current) + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # CHECK GOAL
+        # =====================================================
+        if current == goal:
+
+            log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
+
+            log_output += (
+                f"- Tổng số lượt xét: {step_count}\n"
+            )
+
+            log_output += (
+                f"- Số bước đi tìm được: {g}\n"
+            )
+
+            return path, log_output
+
+        # =====================================================
+        # SINH NODE CON
+        # =====================================================
+        generated_children = []
+
+        children = next_states(current)
+
+        # Sort theo f nhỏ trước cho đẹp log
+        children.sort(
+            key=lambda x:
+            (g + 1) + calculate_manhattan(x)
+        )
+
+        for nxt in children:
+
+            nxt_tuple = to_tuple(nxt)
+
+            next_g = g + 1
+            next_h = calculate_manhattan(nxt)
+            next_f = next_g + next_h
+
+            # -------------------------------------------------
+            # Nếu tìm được đường đi tốt hơn
+            # -------------------------------------------------
+            if (
+                nxt_tuple not in cost_so_far
+                or next_g < cost_so_far[nxt_tuple]
+            ):
+
+                cost_so_far[nxt_tuple] = next_g
+
+                counter += 1
+
+                heapq.heappush(
+                    frontier_heap,
+                    (
+                        next_f,
+                        counter,
+                        next_g,
+                        next_h,
+                        nxt,
+                        path + [nxt]
+                    )
+                )
+
+                frontier_set.add(nxt_tuple)
+
+                nxt_str = " ".join(
+                    " ".join(str(cell) for cell in row)
+                    for row in nxt
+                )
+
+                generated_children.append(
+                    f"   + Sinh ra: [{nxt_str}] "
+                    f"-> g: {next_g}, "
+                    f"h: {next_h}, "
+                    f"f: {next_f}"
+                )
+
+        # =====================================================
+        # LOG NODE CON
+        # =====================================================
+        log_output += " CÁC NODE CON:\n"
+
+        if not generated_children:
+
+            log_output += (
+                "   (Không có node hợp lệ)\n"
+            )
+
+        else:
+            for child in generated_children:
+                log_output += child + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG FRONTIER
+        # =====================================================
+        log_output += " FRONTIER HIỆN TẠI:\n"
+
+        sorted_frontier = sorted(
+            frontier_heap,
+            key=lambda x: x[0]
+        )
+
+        if not sorted_frontier:
+
+            log_output += "   (Trống)\n"
+
+        else:
+
+            for item in sorted_frontier:
+
+                (
+                    f_item,
+                    _,
+                    g_item,
+                    h_item,
+                    board_item,
+                    _
+                ) = item
+
+                board_str = " ".join(
+                    " ".join(str(cell) for cell in row)
+                    for row in board_item
+                )
+
+                log_output += (
+                    f"   > [{board_str}] "
+                    f"-> g: {g_item}, "
+                    f"h: {h_item}, "
+                    f"f: {f_item}\n"
+                )
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG COST SO FAR
+        # =====================================================
+        log_output += " COST SO FAR:\n"
+
+        for state, cost in cost_so_far.items():
+
+            state_str = " ".join(
+                " ".join(str(cell) for cell in row)
+                for row in state
+            )
+
+            log_output += (
+                f"   > [{state_str}] "
+                f"-> g nhỏ nhất = {cost}\n"
+            )
+
+        log_output += f"{'=' * 60}\n"
+
+    # =========================================================
+    # KHÔNG TÌM THẤY
+    # =========================================================
+    log_output += (
+        "\n❌ THẤT BẠI: "
+        "Không tìm được đường đi.\n"
+    )
+
+    return None, log_output
+
+# ===================================================
+# HÀM 8: IDA*
+# ===================================================
+def ida_star(start, goal):
+
+    log_output = "=== IDA* SEARCH LOG ===\n"
+
+    step_count = 0
+
+    # =========================================================
+    # THRESHOLD BAN ĐẦU = heuristic(start)
+    # =========================================================
+    threshold = calculate_manhattan(start)
+
+    log_output += (
+        f"Ngưỡng ban đầu (threshold): {threshold}\n"
+    )
+
+    # =========================================================
+    # DFS GIỚI HẠN THEO f = g + h
+    # =========================================================
+    def search(path, g, threshold, reached):
+
+        nonlocal step_count
+        nonlocal log_output
+
+        current = path[-1]
+
+        # -----------------------------------------------------
+        # TÍNH h VÀ f
+        # -----------------------------------------------------
+        h = calculate_manhattan(current)
+        f = g + h
+
+        # -----------------------------------------------------
+        # PRUNING / CUT-OFF
+        # -----------------------------------------------------
+        if f > threshold:
+
+            log_output += (
+                f"\n[CUT-OFF] "
+                f"f = {f} vượt threshold = {threshold}\n"
+            )
+
+            return f
+
+        step_count += 1
+
+        # =====================================================
+        # LOG NODE HIỆN TẠI
+        # =====================================================
+        log_output += f"\n{'=' * 60}\n"
+
+        log_output += (
+            f" STEP {step_count} | "
+            f"(g: {g}, h: {h}, f: {f}, threshold: {threshold})\n"
+        )
+
+        log_output += f"{'=' * 60}\n"
+
+        log_output += format_state(current) + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # CHECK GOAL
+        # =====================================================
+        if current == goal:
+
+            log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
+
+            log_output += (
+                f"- Tổng số lượt xét: {step_count}\n"
+            )
+
+            log_output += (
+                f"- Số bước đi tìm được: {g}\n"
+            )
+
+            return path
+
+        # =====================================================
+        # SINH NODE CON
+        # =====================================================
+        children = []
+
+        for nxt in next_states(current):
+
+            nxt_tuple = to_tuple(nxt)
+
+            # Tránh lặp trong đường đi hiện tại
+            if nxt_tuple not in reached:
+                children.append(nxt)
+
+        # =====================================================
+        # SORT THEO h NHỎ NHẤT
+        # =====================================================
+        children.sort(key=calculate_manhattan)
+
+        # =====================================================
+        # LOG NODE CON
+        # =====================================================
+        generated_children = []
+
+        for nxt in children:
+
+            next_g = g + 1
+            next_h = calculate_manhattan(nxt)
+            next_f = next_g + next_h
+
+            nxt_str = " ".join(
+                " ".join(str(cell) for cell in row)
+                for row in nxt
+            )
+
+            generated_children.append(
+                f"   + Sinh ra: [{nxt_str}] "
+                f"-> g: {next_g}, h: {next_h}, f: {next_f}"
+            )
+
+        log_output += " CÁC NODE CON:\n"
+
+        if not generated_children:
+            log_output += (
+                "   (Không có node con hợp lệ)\n"
+            )
+
+        else:
+            for child in generated_children:
+                log_output += child + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # DFS TIẾP
+        # =====================================================
+        min_threshold = float("inf")
+
+        for nxt in children:
+
+            nxt_tuple = to_tuple(nxt)
+
+            reached.add(nxt_tuple)
+
+            result = search(
+                path + [nxt],
+                g + 1,
+                threshold,
+                reached
+            )
+
+            # -------------------------------------------------
+            # TÌM THẤY ĐƯỜNG ĐI
+            # -------------------------------------------------
+            if isinstance(result, list):
+                return result
+
+            # -------------------------------------------------
+            # CẬP NHẬT threshold NHỎ NHẤT BỊ VƯỢT
+            # -------------------------------------------------
+            if result < min_threshold:
+                min_threshold = result
+
+            # BACKTRACK
+            reached.remove(nxt_tuple)
+
+        return min_threshold
+
+    # =========================================================
+    # VÒNG LẶP TĂNG THRESHOLD
+    # =========================================================
+    while True:
+
+        log_output += f"\n\n{'#' * 60}\n"
+
+        log_output += (
+            f" BẮT ĐẦU DFS VỚI THRESHOLD = {threshold}\n"
+        )
+
+        log_output += f"{'#' * 60}\n"
+
+        reached = set()
+        reached.add(to_tuple(start))
+
+        result = search(
+            [start],
+            0,
+            threshold,
+            reached
+        )
+
+        # =====================================================
+        # TÌM THẤY LỜI GIẢI
+        # =====================================================
+        if isinstance(result, list):
+            return result, log_output
+
+        # =====================================================
+        # KHÔNG CÒN NODE ĐỂ MỞ RỘNG
+        # =====================================================
+        if result == float("inf"):
+
+            log_output += (
+                "\n❌ THẤT BẠI: "
+                "Không tìm được đường đi đến đích.\n"
+            )
+
+            return None, log_output
+
+        # =====================================================
+        # TĂNG THRESHOLD
+        # =====================================================
+        log_output += (
+            f"\n>>> TĂNG THRESHOLD: "
+            f"{threshold} -> {result}\n"
+        )
+
+        threshold = result
+
+def search_dfs(path, g, threshold):
+    global log_output, step_count
+
+    current = path[-1]
+    h = calculate_manhattan(current)
+    f = g + h
+    current_tuple = to_tuple(current)
+
+    step_count += 1
+
+    # 1 & 2. IN NODE HIỆN TẠI LÊN ĐẦU STEP (Y hệt form Greedy)
+    log_output += f"\n{'=' * 60}\n"
+    log_output += f" STEP {step_count} | NODE HIỆN TẠI (Step/g: {g}, h: {h} -> f/Cost: {f} | Threshold: {threshold})\n"
+    log_output += f"{'=' * 60}\n"
+    log_output += format_state(current) + "\n"
+    log_output += f"{'-' * 60}\n"
+
+    # Kiểm tra điều kiện chặn Threshold
+    if f > threshold:
+        log_output += f"   (Node này bị CHẶN vì f = {f} > Threshold = {threshold})\n"
+        log_output += f"{'-' * 60}\n"
+        return f, None
+
+    # Kiểm tra điều kiện Đích ngay khi POP
+    if current == GOAL:
+        return f, path
+
+    min_val = float('inf')
+
+    # Tạo danh sách mô phỏng Frontier cục bộ cho bước này và log sinh con
+    generated_children = []
+    simulated_frontier = []
+
+    # 3. SINH CÁC TRẠNG THÁI CON
+    for nxt in next_states(current):
+        # Tránh trùng lặp ngược lại các node cha đang nằm trên cây đường đi hiện tại (Reached)
+        if nxt not in path:
+            next_g = g + 1
+            next_h = calculate_manhattan(nxt)
+            next_f = next_g + next_h
+
+            nxt_str = " ".join(" ".join(str(cell) for cell in row) for row in nxt)
+            generated_children.append(f"   + Sinh ra: [{nxt_str}] -> Step: {next_g}, h: {next_h} -> f/Cost: {next_f}")
+
+            # Nếu thỏa mãn hạn mức thì đưa vào danh sách chờ đi tiếp (Frontier của nhánh)
+            if next_f <= threshold:
+                simulated_frontier.append((next_f, next_g, next_h, nxt))
+
+    # In danh sách các node con vừa mới sinh ra ở bước này
+    log_output += " CÁC TRẠNG THÁI CON VỪA SINH RA:\n"
+    if not generated_children:
+        log_output += "   (Không có node con nào hợp lệ hoặc tất cả tạo thành chu trình trùng lặp)\n"
+    else:
+        for child in generated_children:
+            log_output += child + "\n"
+    log_output += f"{'-' * 60}\n"
+
+    # 4. ĐỊNH DẠNG FRONTIER HIỆN TẠI (Các node con hợp lệ sắp được chọn đi sâu xuống)
+    log_output += " FRONTIER NHÁNH HIỆN TẠI (Các node con <= Threshold, xếp theo f nhỏ nhất):\n"
+
+    # Sắp xếp các node con hợp lệ theo f_cost tăng dần để ưu tiên nhánh tốt trước
+    sorted_frontier = sorted(simulated_frontier, key=lambda x: x[0])
+
+    if not sorted_frontier:
+        log_output += "   (Trống hoặc tất cả các con đều vượt ngưỡng Threshold)\n"
+    else:
+        for item in sorted_frontier:
+            f_item, g_item, h_item, board_item = item
+            f_str = " ".join(" ".join(str(cell) for cell in row) for row in board_item)
+            log_output += f"   > [{f_str}] -> Step: {g_item}, h: {h_item} -> f/Cost: {f_item}\n"
+    log_output += f"{'-' * 60}\n"
+
+    # 5. ĐỊNH DẠNG REACHED (Chính là vết đường đi từ gốc đến nút cha hiện tại)
+    log_output += " REACHED (Chuỗi lộ trình cây DFS đang đi tính đến bước này):\n"
+    for node in path:
+        r_str = " ".join(" ".join(str(cell) for cell in row) for row in to_tuple(node))
+        log_output += f"   > [{r_str}]\n"
+    log_output += f"{'=' * 60}\n"
+
+    # TIẾN HÀNH DUYỆT ĐỆ QUY XUỐNG CÁC CON THEO THỨ TỰ ƯU TIÊN
+    for item in sorted_frontier:
+        _, next_g, _, nxt = item
+
+        path.append(nxt)
+        distance, result_path = search_dfs(path, next_g, threshold)
+
+        if result_path is not None:
+            return distance, result_path
+
+        if distance < min_val:
+            min_val = distance
+
+        path.pop()  # Quay lui (Backtrack)
+
+    return min_val, None
 
 # =========================
 # MAIN UI APPLICATION
@@ -303,12 +1223,16 @@ def main(page: ft.Page):
     grid = ft.Column(spacing=6, alignment=ft.MainAxisAlignment.CENTER)
 
     mode_dropdown = ft.Dropdown(
-        value="pop",  # Giá trị mặc định ban đầu
+        value="pop",
         options=[
             ft.dropdown.Option("pop", "Hàm 1: Check khi POP + Add Reached khi POP"),
             ft.dropdown.Option("push", "Hàm 2: Check khi SINH + Add Reached NGAY"),
             ft.dropdown.Option("dfs", "Hàm 3: DFS"),
             ft.dropdown.Option("iddfs", "Hàm 4: ITERATIVE-DFS"),
+            ft.dropdown.Option("ucs", "Hàm 5: UCS"),
+            ft.dropdown.Option("greedy", "Hàm 6: GREEDY"),
+            ft.dropdown.Option("a_star", "Hàm 7: A*"),
+            ft.dropdown.Option("ida_star", "Hàm 8: IDA*")
         ],
         width=360,
     )
@@ -344,7 +1268,6 @@ def main(page: ft.Page):
             grid.controls.append(r)
 
     def update_path_display():
-        """Hàm cập nhật text trong ô Path ngắn gọn dạng: Hiện tại / Tổng số bước"""
         if not solution[0]:
             steps_path_view.value = "0 / 0"
             return
@@ -405,8 +1328,16 @@ def main(page: ft.Page):
             path, bfs_log = bfs_check_on_push_and_reached(START, GOAL)
         elif mode_dropdown.value == "dfs":
             path, bfs_log = dfs(START, GOAL)
-        else:
+        elif mode_dropdown.value == "iddfs":
             path, bfs_log = iddfs(START, GOAL)
+        elif mode_dropdown.value == "ucs":
+            path, bfs_log = ucs(START, GOAL)
+        elif mode_dropdown.value == "greedy":
+            path, bfs_log = greedy(START, GOAL)
+        elif mode_dropdown.value == "a_star":
+            path, bfs_log = a_star(START, GOAL)
+        elif mode_dropdown.value == "ida_star":
+            path, bfs_log = ida_star(START, GOAL)
 
         path_output.value = bfs_log
 
@@ -493,7 +1424,7 @@ def main(page: ft.Page):
                 margin=ft.margin.only(top=5, bottom=5)
             ),
             ft.Container(content=grid, margin=ft.margin.only(top=5, bottom=5)),
-            ft.Container(content=steps_path_view, margin=ft.margin.only(top=5, bottom=5)),  # Ô đếm bước phân số nằm đây
+            ft.Container(content=steps_path_view, margin=ft.margin.only(top=5, bottom=5)),
             ft.Row([prev_btn, play_btn, next_btn], alignment=ft.MainAxisAlignment.CENTER),
             solve_btn,
             info
