@@ -1,7 +1,6 @@
-# ======================================================================================================
-#                                 Visualizer BFS/DFS/IDDFS/A* 8PUZZEL
-# Link GITHUB: https://github.com/NguyenTrungKien1805/8puzzel_visualizer/edit/main/8puzzel_visualizer.py
-# ======================================================================================================
+# ===================================================================
+#                 Visualizer BFS/DFS/IDDFS/A* 8PUZZEL
+# ===================================================================
 
 from random import shuffle
 import flet as ft
@@ -1204,6 +1203,256 @@ def search_dfs(path, g, threshold):
 
     return min_val, None
 
+# ===================================================
+# HÀM 9: CLIMING HILL - SIMPLE
+# ===================================================
+def simple_hill_climbing(start, goal):
+    log_output = "=== SIMPLE HILL CLIMBING SEARCH LOG ===\n"
+
+    step_count = 0
+
+    # Trạng thái hiện tại và đường đi đến trạng thái đó
+    current_board = start
+    current_path = [start]
+
+    # Reached = tập các trạng thái đã từng đi qua (tránh lặp vòng vô hạn nếu đồ thị có chu trình)
+    reached = set()
+    reached.add(to_tuple(start))
+
+    # =========================================================
+    # MAIN LOOP
+    # =========================================================
+    while True:
+        step_count += 1
+        current_tuple = to_tuple(current_board)
+
+        # Tính h của node hiện tại
+        h_current = calculate_manhattan(current_board)
+        g = len(current_path) - 1
+
+        # =====================================================
+        # LOG NODE HIỆN TẠI
+        # =====================================================
+        log_output += f"\n{'=' * 60}\n"
+        log_output += f" STEP {step_count} | NODE HIỆN TẠI (Step: {g}, h: {h_current})\n"
+        log_output += f"{'=' * 60}\n"
+
+        log_output += format_state(current_board) + "\n"
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # CHECK GOAL
+        # =====================================================
+        if current_board == goal:
+            log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
+            log_output += f"- Tổng số lượt xét: {step_count}\n"
+            log_output += f"- Số bước đi tìm được: {g}\n"
+            return current_path, log_output
+
+        # =====================================================
+        # SINH NODE CON VÀ CHỌN BƯỚC ĐI TIẾP THEO
+        # =====================================================
+        generated_children = []
+        next_board = None  # Lưu trạng thái tiếp theo được chọn
+
+        # Duyệt qua từng trạng thái kế tiếp
+        for nxt in next_states(current_board):
+            nxt_tuple = to_tuple(nxt)
+
+            # Bỏ qua nếu trạng thái này đã từng đi qua
+            if nxt_tuple in reached:
+                continue
+
+            next_h = calculate_manhattan(nxt)
+            next_g = g + 1
+
+            nxt_str = " ".join(" ".join(str(cell) for cell in row) for row in nxt)
+            generated_children.append(f"   + Sinh ra: [{nxt_str}] -> Step: {next_g}, h: {next_h}")
+
+            # CHIẾN LƯỢC SIMPLE HILL CLIMBING:
+            # Chọn NGAY node đầu tiên tốt hơn node hiện tại (h nhỏ hơn h_current)
+            if next_board is None and next_h < h_current:
+                next_board = nxt
+                next_path = current_path + [nxt]
+                # Log đánh dấu node này được chọn làm bước đi tiếp theo
+                generated_children[-1] += " <--- CHỌN (Tốt hơn node hiện tại)"
+
+        # =====================================================
+        # LOG NODE CON
+        # =====================================================
+        log_output += " CÁC TRẠNG THÁI CON VỪA SINH RA:\n"
+        if not generated_children:
+            log_output += "   (Không có node hợp lệ)\n"
+        else:
+            for child in generated_children:
+                log_output += child + "\n"
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG FRONTIER (Hill Climbing không dùng Frontier như Greedy)
+        # =====================================================
+        log_output += " FRONTIER HIỆN TẠI:\n"
+        if next_board is None:
+            log_output += "   (Trống - Không tìm thấy bước đi tốt hơn)\n"
+        else:
+            # Biểu diễn node duy nhất được giữ lại cho bước sau
+            next_board_str = " ".join(" ".join(str(cell) for cell in row) for row in next_board)
+            log_output += f"   > Node kế tiếp sẽ nhảy tới: [{next_board_str}] -> Step: {g + 1}, h: {calculate_manhattan(next_board)}\n"
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG REACHED
+        # =====================================================
+        log_output += " REACHED:\n"
+        for r in reached:
+            r_str = " ".join(" ".join(str(cell) for cell in row) for row in r)
+            log_output += f"   > [{r_str}]\n"
+        log_output += f"{'=' * 60}\n"
+
+        # =====================================================
+        # CHUYỂN TRẠNG THÁI HOẶC DỪNG THUẬT TOÁN
+        # =====================================================
+        if next_board is not None:
+            # Nếu tìm được bước đi tốt hơn, cập nhật và tiếp tục vòng lặp
+            current_board = next_board
+            current_path = next_path
+            reached.add(to_tuple(current_board))
+        else:
+            # Nếu KHÔNG tìm được node con nào tốt hơn -> Kẹt ở đỉnh cục bộ (Local Optimum)
+            log_output += "\n❌ THẤT BẠI: Kẹt ở đỉnh cục bộ (Local Optimum). Không tìm được đường đi tốt hơn.\n"
+            return None, log_output
+
+# ===================================================
+# HÀM 10: CLIMING HILL - STEEPEST
+# ===================================================
+def steepest_ascent_hill_climbing(start, goal):
+    log_output = "=== STEEPEST-ASCENT HILL CLIMBING SEARCH LOG ===\n"
+
+    step_count = 0
+
+    # Trạng thái hiện tại và đường đi đến trạng thái đó
+    current_board = start
+    current_path = [start]
+
+    # Reached = tập các trạng thái đã từng đi qua
+    reached = set()
+    reached.add(to_tuple(start))
+
+    # =========================================================
+    # MAIN LOOP
+    # =========================================================
+    while True:
+        step_count += 1
+        current_tuple = to_tuple(current_board)
+
+        # Tính h của node hiện tại
+        h_current = calculate_manhattan(current_board)
+        g = len(current_path) - 1
+
+        # =====================================================
+        # LOG NODE HIỆN TẠI
+        # =====================================================
+        log_output += f"\n{'=' * 60}\n"
+        log_output += f" STEP {step_count} | NODE HIỆN TẠI (Step: {g}, h: {h_current})\n"
+        log_output += f"{'=' * 60}\n"
+
+        log_output += format_state(current_board) + "\n"
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # CHECK GOAL
+        # =====================================================
+        if current_board == goal:
+            log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
+            log_output += f"- Tổng số lượt xét: {step_count}\n"
+            log_output += f"- Số bước đi tìm được: {g}\n"
+            return current_path, log_output
+
+        # =====================================================
+        # SINH NODE CON VÀ CHỌN NODE TỐT NHẤT (BEST CHILD)
+        # =====================================================
+        generated_children = []
+
+        best_child_board = None
+        best_child_path = None
+        best_child_h = float('inf')  # Khởi tạo h tốt nhất bằng vô cùng lớn
+
+        # Duyệt QUA TẤT CẢ các trạng thái kế tiếp
+        for nxt in next_states(current_board):
+            nxt_tuple = to_tuple(nxt)
+
+            # Bỏ qua nếu trạng thái này đã nằm trong reached
+            if nxt_tuple in reached:
+                continue
+
+            next_h = calculate_manhattan(nxt)
+            next_g = g + 1
+
+            nxt_str = " ".join(" ".join(str(cell) for cell in row) for row in nxt)
+            generated_children.append({
+                'str_log': f"   + Sinh ra: [{nxt_str}] -> Step: {next_g}, h: {next_h}",
+                'board': nxt,
+                'path': current_path + [nxt],
+                'h': next_h
+            })
+
+            # TÌM CON TỐT NHẤT: Cập nhật nếu tìm thấy con có h nhỏ hơn best_child_h hiện tại
+            if next_h < best_child_h:
+                best_child_h = next_h
+                best_child_board = nxt
+                best_child_path = current_path + [nxt]
+
+        # =====================================================
+        # LOG NODE CON
+        # =====================================================
+        log_output += " CÁC TRẠNG THÁI CON VỪA SINH RA:\n"
+        if not generated_children:
+            log_output += "   (Không có node hợp lệ)\n"
+        else:
+            for child in generated_children:
+                # Nếu node con này trùng với node tốt nhất vừa tìm được, đánh dấu lại
+                if child['board'] == best_child_board:
+                    log_output += child['str_log'] + " <--- CON TỐT NHẤT\n"
+                else:
+                    log_output += child['str_log'] + "\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG FRONTIER (Thể hiện node tốt nhất được giữ lại)
+        # =====================================================
+        log_output += " FRONTIER HIỆN TẠI:\n"
+        # Chỉ chuyển sang node con tốt nhất NẾU nó thực sự tốt hơn node hiện tại (best_child_h < h_current)
+        if best_child_board is not None and best_child_h < h_current:
+            best_board_str = " ".join(" ".join(str(cell) for cell in row) for row in best_child_board)
+            log_output += f"   > Node tốt nhất được chọn: [{best_board_str}] -> Step: {g + 1}, h: {best_child_h}\n"
+        else:
+            log_output += "   (Trống - Các node con không có node nào tốt hơn node hiện tại)\n"
+
+        log_output += f"{'-' * 60}\n"
+
+        # =====================================================
+        # LOG REACHED
+        # =====================================================
+        log_output += " REACHED:\n"
+        for r in reached:
+            r_str = " ".join(" ".join(str(cell) for cell in row) for row in r)
+            log_output += f"   > [{r_str}]\n"
+        log_output += f"{'=' * 60}\n"
+
+        # =====================================================
+        # ĐIỀU KIỆN DI CHUYỂN HOẶC DỪNG
+        # =====================================================
+        if best_child_board is not None and best_child_h < h_current:
+            # Di chuyển sang node con tốt nhất đó
+            current_board = best_child_board
+            current_path = best_child_path
+            reached.add(to_tuple(current_board))
+        else:
+            # Nếu node con tốt nhất cũng KHÔNG tốt hơn node hiện tại -> Bị kẹt đỉnh cục bộ
+            log_output += "\n❌ THẤT BẠI: Kẹt ở đỉnh cục bộ (Local Optimum). Không có node con nào tốt hơn trạng thái hiện tại.\n"
+            return None, log_output
+
 # =========================
 # MAIN UI APPLICATION
 # =========================
@@ -1232,7 +1481,9 @@ def main(page: ft.Page):
             ft.dropdown.Option("ucs", "Hàm 5: UCS"),
             ft.dropdown.Option("greedy", "Hàm 6: GREEDY"),
             ft.dropdown.Option("a_star", "Hàm 7: A*"),
-            ft.dropdown.Option("ida_star", "Hàm 8: IDA*")
+            ft.dropdown.Option("ida_star", "Hàm 8: IDA*"),
+            ft.dropdown.Option("hillcliming_simple", "HÀM 9: CLIMING HILL - SIMPLE  "),
+            ft.dropdown.Option("hillcliming_steepest", "HÀM 10: CLIMING HILL - STEEPEST")
         ],
         width=360,
     )
@@ -1338,6 +1589,10 @@ def main(page: ft.Page):
             path, bfs_log = a_star(START, GOAL)
         elif mode_dropdown.value == "ida_star":
             path, bfs_log = ida_star(START, GOAL)
+        elif mode_dropdown.value == "hillcliming_simple":
+            path, bfs_log = simple_hill_climbing(START, GOAL)
+        elif mode_dropdown.value == "hillcliming_steepest":
+            path, bfs_log = steepest_ascent_hill_climbing(START, GOAL)
 
         path_output.value = bfs_log
 
