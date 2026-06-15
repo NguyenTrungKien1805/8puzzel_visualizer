@@ -9,7 +9,7 @@
 ## Cài đặt thư viện
 
 ```bash
-pip install flet
+pip install flet==0.22.1
 ```
 
 Hoặc:
