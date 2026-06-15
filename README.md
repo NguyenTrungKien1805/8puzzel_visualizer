@@ -1,348 +1,391 @@
-# 8 Puzzle Algorithm Visualizer
+# 8-Puzzle Visualizer using Artificial Intelligence Search Algorithms
 
-Ứng dụng trực quan hóa thuật toán tìm kiếm trên bài toán 8 Puzzle bằng Python + Flet.
+## 1. Giới thiệu
 
-Dự án hỗ trợ mô phỏng hoạt động của nhiều thuật toán AI/Search khác nhau như:
+8-Puzzle là một bài toán kinh điển trong lĩnh vực Trí tuệ nhân tạo (Artificial Intelligence - AI). Bài toán bao gồm một bàn cờ kích thước 3×3 chứa 8 ô số từ 1 đến 8 và một ô trống (0). Mục tiêu là di chuyển các ô số bằng cách hoán đổi với ô trống để đưa trạng thái ban đầu về trạng thái đích.
 
-* BFS
-* DFS
-* IDDFS
-* UCS
-* Greedy Best First Search
-* A*
-* IDA*
-
-Kèm:
-
-* Giao diện trực quan
-* Animation từng bước
-* Log cấu trúc dữ liệu
-* Frontier / Reached
-* Phân tích đường đi
-* Hướng di chuyển của ô trống
+Dự án này xây dựng một hệ thống trực quan hóa (Visualizer) giúp mô phỏng quá trình giải bài toán 8-Puzzle bằng nhiều thuật toán tìm kiếm khác nhau. Chương trình được phát triển bằng Python và Flet, cho phép người dùng theo dõi từng bước hoạt động của các thuật toán AI.
 
 ---
 
-# Demo giao diện
+## 2. Mục tiêu
 
-## Board Puzzle + Điều khiển
-
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/3ce55096-1ebb-4b01-af0c-97783b9f8270" />
-
----
-
-# Công nghệ sử dụng
-
-| Thành phần       | Công nghệ               |
-| ---------------- | ----------------------- |
-| Ngôn ngữ         | Python                  |
-| GUI Framework    | Flet                    |
-| Cấu trúc dữ liệu | deque, heapq            |
-| AI Search        | BFS, DFS, UCS, A*, IDA* |
-| Heuristic        | Manhattan Distance      |
+* Mô phỏng trực quan bài toán 8-Puzzle.
+* So sánh hiệu quả của các thuật toán tìm kiếm AI.
+* Hiển thị quá trình mở rộng trạng thái.
+* Hiển thị Frontier, Reached, Cost, Heuristic và đường đi lời giải.
+* Hỗ trợ nhập trạng thái đầu và trạng thái đích tùy chỉnh.
+* Hỗ trợ ghi log chi tiết cho từng thuật toán.
 
 ---
 
-# Thuật toán được hỗ trợ
+## 3. Công nghệ sử dụng
 
-| Thuật toán | Mô tả                              |
-| ---------- | ---------------------------------- |
-| BFS        | Tìm kiếm theo chiều rộng           |
-| DFS        | Tìm kiếm theo chiều sâu            |
-| IDDFS      | DFS tăng dần độ sâu                |
-| UCS        | Uniform Cost Search                |
-| Greedy     | Tham lam theo heuristic            |
-| A*         | Tối ưu bằng g(n)+h(n)              |
-| IDA*       | A* kết hợp DFS Iterative Deepening |
+### Ngôn ngữ lập trình
 
----
+* Python 3.x
 
-# Heuristic sử dụng
+### Thư viện
 
-Dự án dùng:
-
-## Manhattan Distance
-
-[
-h(n)=\sum |x_1-x_2|+|y_1-y_2|
-]
-
-h(n)=\sum |x_1-x_2|+|y_1-y_2|
+* Flet (GUI)
+* collections
+* heapq
+* copy
+* random
+* math
+* asyncio
 
 ---
 
-# Công thức A*
+## 4. Mô tả bài toán
 
-[
-f(n)=g(n)+h(n)
-]
+### Trạng thái
 
-f(n)=g(n)+h(n)
+Mỗi trạng thái được biểu diễn bởi ma trận 3×3:
+
+1 2 3
+4 0 6
+7 5 8
 
 Trong đó:
 
-| Thành phần | Ý nghĩa                  |
-| ---------- | ------------------------ |
-| g(n)       | Chi phí thực tế từ Start |
-| h(n)       | Heuristic Manhattan      |
-| f(n)       | Tổng chi phí dự đoán     |
+* 0 đại diện cho ô trống.
+* Các ô số có thể di chuyển lên, xuống, trái hoặc phải nếu hợp lệ.
 
----
-
-# IDA*
-
-IDA* hoạt động bằng:
-
-* DFS
-* Threshold
-* Heuristic Manhattan
-* Iterative Deepening
-
-Node sẽ bị cắt nếu:
-
-[
-f(n) > threshold
-]
-
-f(n)>threshold
-
----
-
-# Cấu trúc dự án
-
-```text
-8puzzle_visualizer/
-│
-├── main.py
-├── README.md
-└── requirements.txt
-```
-
----
-
-# Cài đặt
-
-## 1. Clone project
-
-```bash
-git clone https://github.com/your-username/8puzzle_visualizer.git
-```
-
----
-
-## 2. Di chuyển vào thư mục
-
-```bash
-cd 8puzzle_visualizer
-```
-
----
-
-## 3. Cài thư viện
-
-## [Flet Official Website](https://flet.dev?utm_source=chatgpt.com)
-
-```bash
-pip install flet=0.22.1
-```
-
----
-
-# Chạy chương trình
-
-```bash
-python main.py
-```
-
----
-
-# Giao diện chính
-
-## Khu vực bên trái
-
-| Thành phần   | Chức năng        |
-| ------------ | ---------------- |
-| Dropdown     | Chọn thuật toán  |
-| Board Puzzle | Hiển thị ma trận |
-| Prev         | Quay lui         |
-| Next         | Sang bước tiếp   |
-| Play         | Chạy animation   |
-| Solve        | Giải bài toán    |
-
----
-
-## Khu vực bên phải
-
-| Thành phần  | Chức năng          |
-| ----------- | ------------------ |
-| Search Logs | Nhật ký thuật toán |
-| Visual Path | Đường đi chi tiết  |
-
----
-
-# Chức năng nổi bật
-
-## 1. Hiển thị Frontier
-
-Ví dụ:
-
-```text
-FRONTIER:
-[1 2 3 4 5 6 7 0 8]
-[1 2 3 4 5 6 0 7 8]
-```
-
----
-
-## 2. Hiển thị Reached
-
-```text
-REACHED:
-[1 2 3 4 0 6 7 5 8]
-```
-
----
-
-## 3. Animation tự động
-
-* Play
-* Pause
-* Next
-* Prev
-
----
-
-## 4. Log cực chi tiết
-
-Hiển thị:
-
-* g(n)
-* h(n)
-* f(n)
-* threshold
-* frontier
-* reached
-* generated children
-
----
-
-# Ví dụ log A*
-
-```text
-STEP 4 | (g: 2, h: 3, f: 5)
+### Trạng thái đích
 
 1 2 3
 4 5 6
-0 7 8
+7 8 0
 
-CÁC NODE CON:
-+ Sinh ra ...
-```
+### Toán tử
+
+Ô trống có thể di chuyển:
+
+* Up
+* Down
+* Left
+* Right
+
+### Hàm chi phí
+
+Mỗi bước di chuyển có chi phí:
+
+Cost = 1
 
 ---
 
-# Ví dụ log IDA*
+## 5. Heuristic sử dụng
 
-```text
-[CUT-OFF] f = 7 vượt threshold = 5
-```
+### Manhattan Distance
+
+Tổng khoảng cách Manhattan của tất cả các ô đến vị trí đích.
+
+h(n) = Σ(|x1 - x2| + |y1 - y2|)
+
+Ưu điểm:
+
+* Admissible
+* Consistent
+* Phù hợp với A*, Greedy và IDA*
 
 ---
 
-# Kiến thức AI/Search được minh họa
+## 6. Các thuật toán được cài đặt
 
-Dự án phù hợp để học:
+### Hàm 1
 
-* Artificial Intelligence
+Breadth First Search (Check Goal on Pop)
+
+Đặc điểm:
+
+* Kiểm tra đích khi lấy node khỏi Frontier.
+* Thêm node vào Reached khi Pop.
+* Luôn tìm được lời giải tối ưu theo số bước.
+
+---
+
+### Hàm 2
+
+Breadth First Search (Check Goal on Generate)
+
+Đặc điểm:
+
+* Kiểm tra đích ngay khi sinh node.
+* Có thể giảm số lượng node mở rộng.
+
+---
+
+### Hàm 3
+
+Depth First Search (DFS)
+
+Đặc điểm:
+
+* Sử dụng Stack.
+* Đi sâu trước.
+* Không đảm bảo tối ưu.
+
+---
+
+### Hàm 4
+
+Depth Limited Search (DLS)
+
+Đặc điểm:
+
+* DFS có giới hạn độ sâu.
+* Tránh vòng lặp vô hạn.
+
+---
+
+### Hàm 5
+
+Iterative Deepening DFS (IDDFS)
+
+Đặc điểm:
+
+* Kết hợp BFS và DFS.
+* Tăng dần độ sâu.
+* Tìm lời giải tối ưu theo độ sâu.
+
+---
+
+### Hàm 6
+
+Uniform Cost Search (UCS)
+
+Đặc điểm:
+
+* Mở rộng node có chi phí nhỏ nhất.
+* Sử dụng Priority Queue.
+* Tối ưu khi chi phí không âm.
+
+---
+
+### Hàm 7
+
+Greedy Best First Search
+
+Đặc điểm:
+
+* Chọn node có heuristic nhỏ nhất.
+* Nhanh nhưng không đảm bảo tối ưu.
+
+f(n) = h(n)
+
+---
+
+### Hàm 8
+
+A* Search
+
+Đặc điểm:
+
+* Kết hợp Cost và Heuristic.
+* Tối ưu và đầy đủ.
+
+f(n) = g(n) + h(n)
+
+---
+
+### Hàm 9
+
+Iterative Deepening A* (IDA*)
+
+Đặc điểm:
+
+* Kết hợp DFS và A*.
+* Tiết kiệm bộ nhớ.
+
+---
+
+### Hàm 10
+
+Hill Climbing
+
+Đặc điểm:
+
+* Luôn chọn trạng thái tốt nhất lân cận.
+* Có thể mắc kẹt tại Local Maximum.
+
+---
+
+### Hàm 11
+
+Steepest-Ascent Hill Climbing
+
+Đặc điểm:
+
+* Chọn trạng thái có heuristic tốt nhất trong toàn bộ lân cận.
+
+---
+
+### Hàm 12
+
+Stochastic Hill Climbing
+
+Đặc điểm:
+
+* Chọn ngẫu nhiên trong các trạng thái tốt.
+
+---
+
+### Hàm 13
+
+Beam Search
+
+Đặc điểm:
+
+* Chỉ giữ lại k trạng thái tốt nhất.
+* Giảm sử dụng bộ nhớ.
+
+---
+
+### Hàm 14
+
+Local Beam Search
+
+Đặc điểm:
+
+* Nhiều trạng thái được tìm kiếm song song.
+
+---
+
+### Hàm 15
+
+Simulated Annealing
+
+Đặc điểm:
+
+* Cho phép chấp nhận trạng thái xấu trong giai đoạn đầu.
+* Giúp thoát khỏi Local Optimum.
+
+---
+
+### Hàm 16
+
+Belief State Search
+
+Đặc điểm:
+
+* Tìm kiếm trên tập trạng thái niềm tin.
+* Thường dùng trong môi trường không hoàn toàn quan sát được.
+
+---
+
+### Hàm 17
+
+AND-OR Graph Search
+
+Đặc điểm:
+
+* Cài đặt theo mã giả trong giáo trình AI.
+* Gồm:
+
+  * OR-SEARCH
+  * AND-SEARCH
+* Tránh chu trình bằng Path Checking.
+
+---
+
+### Hàm 18
+
+Constraint Satisfaction Problem (CSP)
+
+Đặc điểm:
+
+* Backtracking Search.
+* Constraint:
+
+  * Không lặp trạng thái.
+* Tìm lời giải bằng quay lui.
+
+---
+
+### Hàm 19
+
+CSP with Domain Search
+
+Đặc điểm:
+
+* Mô hình hóa:
+
+  * Variable = Current State
+  * Domain = Successor States
+  * Constraint = No Repeated State
+* Domain được sắp xếp theo Manhattan Distance.
+
+---
+
+## 7. Chức năng giao diện
+
+### Nhập trạng thái đầu
+
+Người dùng có thể nhập trực tiếp:
+
+Start State
+
+### Nhập trạng thái đích
+
+Người dùng có thể nhập trực tiếp:
+
+Goal State
+
+### Chọn thuật toán
+
+Dropdown cho phép lựa chọn thuật toán cần chạy.
+
+### Giải bài toán
+
+Nút Solve:
+
+* Chạy thuật toán.
+* Tính toán đường đi.
+* Sinh log chi tiết.
+
+### Trực quan hóa
+
+Hiển thị:
+
+* Trạng thái hiện tại.
+* Đường đi lời giải.
+* Frontier.
+* Reached.
+* Chi phí.
+* Heuristic.
+
+---
+
+## 8. Cấu trúc chương trình
+
+Các thành phần chính:
+
+* State Representation
+* Successor Function
+* Goal Test
+* Heuristic Function
 * Search Algorithms
-* State Space Search
-* Heuristic Search
-* Informed Search
-* Uninformed Search
-* Graph Search
-* Tree Search
+* Visualization Module
+* Logging System
 
 ---
 
-# So sánh thuật toán
+## 9. Kết quả
 
-| Thuật toán | Tối ưu | Heuristic | Bộ nhớ     |
-| ---------- | ------ | --------- | ---------- |
-| BFS        | Có     | Không     | Cao        |
-| DFS        | Không  | Không     | Thấp       |
-| IDDFS      | Có     | Không     | Thấp       |
-| UCS        | Có     | Không     | Cao        |
-| Greedy     | Không  | Có        | Trung bình |
-| A*         | Có     | Có        | Cao        |
-| IDA*       | Có     | Có        | Thấp       |
+Chương trình cho phép:
+
+* So sánh hiệu suất các thuật toán.
+* Quan sát quá trình tìm kiếm.
+* Hiểu rõ cách hoạt động của các thuật toán AI cổ điển.
+* Nghiên cứu sự khác biệt giữa Uninformed Search và Informed Search.
 
 ---
 
-# Ý tưởng hoạt động
+## 10. Kết luận
 
-## BFS
+Dự án đã xây dựng thành công hệ thống trực quan hóa bài toán 8-Puzzle bằng nhiều thuật toán tìm kiếm trí tuệ nhân tạo khác nhau.
 
-Dùng Queue:
+Thông qua việc quan sát Frontier, Reached, Heuristic và đường đi lời giải, người dùng có thể hiểu rõ hơn về nguyên lý hoạt động, ưu điểm và hạn chế của từng thuật toán.
 
-```text
-FIFO
-```
-
----
-
-## DFS
-
-Dùng Stack:
-
-```text
-LIFO
-```
-
----
-
-## UCS
-
-Ưu tiên:
-
-* cost nhỏ nhất
-
----
-
-## Greedy
-
-Ưu tiên:
-
-* heuristic nhỏ nhất
-
-[
-f(n)=h(n)
-]
-
-f(n)=h(n)
-
----
-
-## A*
-
-Ưu tiên:
-
-* tổng chi phí nhỏ nhất
-
-[
-f(n)=g(n)+h(n)
-]
-
-f(n)=g(n)+h(n)
-
----
-
-## IDA*
-
-* DFS
-* Threshold
-* Iterative Deepening
-
-
-
-
-
+Dự án là công cụ học tập và nghiên cứu hiệu quả cho các môn học liên quan đến Trí tuệ nhân tạo, Tìm kiếm Heuristic và Giải quyết bài toán bằng AI.
