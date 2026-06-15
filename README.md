@@ -677,3 +677,16 @@ Số bước:
 | Simulated Annealing | Không  | Không  | Rất thấp   |
 
 ---
+<<<<<<< HEAD
+=======
+
+# 16. Hướng phát triển
+
+* Tích hợp Pattern Database Heuristic.
+* Hỗ trợ 15-Puzzle.
+* Xuất log ra file TXT/PDF.
+* So sánh thời gian chạy giữa các thuật toán.
+* Sinh biểu đồ thống kê hiệu năng.
+* Hỗ trợ Dark Mode / Light Mode.
+* Tích hợp thuật toán học tăng cường (Reinforcement Learning).
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="Black">
     <option name="sdkName" value="Python 3.13 (8puzzel)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (8puzzel)" project-jdk-type="Python SDK" />
+=======
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13" project-jdk-type="Python SDK" />
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 </project>

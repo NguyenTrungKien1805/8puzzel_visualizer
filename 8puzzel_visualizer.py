@@ -1,5 +1,6 @@
 # ===================================================================
 #                 Visualizer BFS/DFS/IDDFS/A* 8PUZZEL
+<<<<<<< HEAD
 # LINK GITHUB:https://github.com/NguyenTrungKien1805/8puzzel_visualizer
 # ===================================================================
 
@@ -12,6 +13,16 @@ from collections import deque
 from random import shuffle
 
 import flet as ft
+=======
+# ===================================================================
+
+from random import shuffle
+import flet as ft
+from collections import deque
+import heapq
+import copy
+import asyncio
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 
 # =========================
 # START + GOAL
@@ -28,6 +39,7 @@ GOAL = [
     [7, 8, 0]
 ]
 
+<<<<<<< HEAD
 # 1. Mẫu khuyết START
 START_KHUYET = [
     [1, 2, 3],
@@ -42,6 +54,8 @@ GOAL_KHUYET = [
     [7, 8, 0]
 ]
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 
 # =========================
 # HELPER FUNCTIONS
@@ -61,7 +75,10 @@ def find_zero(state):
                 return i, j
     return -1, -1
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 def find_goal_pos(val):
     for r in range(3):
         for c in range(3):
@@ -69,7 +86,10 @@ def find_goal_pos(val):
                 return r, c
     return -1, -1
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 def calculate_manhattan(board):
     """Tính khoảng cách Manhattan dựa trên ma trận GOAL toàn cục"""
     total_h = 0
@@ -81,7 +101,10 @@ def calculate_manhattan(board):
                 total_h += abs(r - goal_r) + abs(c - goal_c)
     return total_h
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 def next_states(state):
     x, y = find_zero(state)
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -112,6 +135,7 @@ def get_move_direction(state_old, state_new):
     return ""
 
 
+<<<<<<< HEAD
 # Hàm sinh ra các BS
 def generate_belief_state(matrix):
     """Sinh ra tập hợp niềm tin (Belief State) chứa các ma trận khả dĩ từ dấu '?'"""
@@ -178,6 +202,8 @@ def count_inversions(matrix):
     return inversions
 
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 1: CHECK LÚC POP + ADD REACHED LÚC POP
 # ===================================================
@@ -280,7 +306,10 @@ def bfs_check_on_push_and_reached(start, goal):
     bfs_log += "\nFAILURE\n"
     return None, bfs_log
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 3: DFS
 # ===================================================
@@ -534,7 +563,10 @@ def ucs(start, goal):
     log_output += "\nTHẤT BẠI: Không tìm được đường đi đến đích.\n"
     return None, log_output
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 6: Greedy
 # ===================================================
@@ -609,6 +641,10 @@ def greedy(start, goal):
         # CHECK GOAL
         # =====================================================
         if current == goal:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
             log_output += f"- Tổng số lượt xét: {step_count}\n"
             log_output += f"- Số bước đi tìm được: {g}\n"
@@ -630,9 +666,16 @@ def greedy(start, goal):
             # - chưa nằm trong frontier
             # -------------------------------------------------
             if (
+<<<<<<< HEAD
                     nxt_tuple not in reached
                     and nxt_tuple not in frontier_set
             ):
+=======
+                nxt_tuple not in reached
+                and nxt_tuple not in frontier_set
+            ):
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
                 next_h = calculate_manhattan(nxt)
                 next_g = g + 1
 
@@ -684,6 +727,10 @@ def greedy(start, goal):
 
         else:
             for item in sorted_frontier:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
                 h_item, _, board_item, path_item = item
 
                 g_item = len(path_item) - 1
@@ -706,6 +753,10 @@ def greedy(start, goal):
         log_output += " REACHED:\n"
 
         for r in reached:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             r_str = " ".join(
                 " ".join(str(cell) for cell in row)
                 for row in r
@@ -722,11 +773,18 @@ def greedy(start, goal):
 
     return None, log_output
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 7: A*
 # ===================================================
 def a_star(start, goal):
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
     log_output = "=== A* SEARCH LOG ===\n"
 
     step_count = 0
@@ -814,6 +872,10 @@ def a_star(start, goal):
         # CHECK GOAL
         # =====================================================
         if current == goal:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
 
             log_output += (
@@ -851,9 +913,16 @@ def a_star(start, goal):
             # Nếu tìm được đường đi tốt hơn
             # -------------------------------------------------
             if (
+<<<<<<< HEAD
                     nxt_tuple not in cost_so_far
                     or next_g < cost_so_far[nxt_tuple]
             ):
+=======
+                nxt_tuple not in cost_so_far
+                or next_g < cost_so_far[nxt_tuple]
+            ):
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
                 cost_so_far[nxt_tuple] = next_g
 
                 counter += 1
@@ -918,6 +987,10 @@ def a_star(start, goal):
         else:
 
             for item in sorted_frontier:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
                 (
                     f_item,
                     _,
@@ -947,6 +1020,10 @@ def a_star(start, goal):
         log_output += " COST SO FAR:\n"
 
         for state, cost in cost_so_far.items():
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             state_str = " ".join(
                 " ".join(str(cell) for cell in row)
                 for row in state
@@ -969,11 +1046,18 @@ def a_star(start, goal):
 
     return None, log_output
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 8: IDA*
 # ===================================================
 def ida_star(start, goal):
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
     log_output = "=== IDA* SEARCH LOG ===\n"
 
     step_count = 0
@@ -1007,6 +1091,10 @@ def ida_star(start, goal):
         # PRUNING / CUT-OFF
         # -----------------------------------------------------
         if f > threshold:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             log_output += (
                 f"\n[CUT-OFF] "
                 f"f = {f} vượt threshold = {threshold}\n"
@@ -1036,6 +1124,10 @@ def ida_star(start, goal):
         # CHECK GOAL
         # =====================================================
         if current == goal:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             log_output += "\n🎉 TÌM THẤY ĐÍCH!\n"
 
             log_output += (
@@ -1072,6 +1164,10 @@ def ida_star(start, goal):
         generated_children = []
 
         for nxt in children:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             next_g = g + 1
             next_h = calculate_manhattan(nxt)
             next_f = next_g + next_h
@@ -1167,6 +1263,10 @@ def ida_star(start, goal):
         # KHÔNG CÒN NODE ĐỂ MỞ RỘNG
         # =====================================================
         if result == float("inf"):
+<<<<<<< HEAD
+=======
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
             log_output += (
                 "\n❌ THẤT BẠI: "
                 "Không tìm được đường đi đến đích.\n"
@@ -1184,7 +1284,10 @@ def ida_star(start, goal):
 
         threshold = result
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 def search_dfs(path, g, threshold):
     global log_output, step_count
 
@@ -1281,7 +1384,10 @@ def search_dfs(path, g, threshold):
 
     return min_val, None
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 9: CLIMING HILL - SIMPLE
 # ===================================================
@@ -1401,7 +1507,10 @@ def simple_hill_climbing(start, goal):
             log_output += "\n❌ THẤT BẠI: Kẹt ở đỉnh cục bộ (Local Optimum). Không tìm được đường đi tốt hơn.\n"
             return None, log_output
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 # ===================================================
 # HÀM 10: CLIMING HILL - STEEPEST
 # ===================================================
@@ -1533,6 +1642,7 @@ def steepest_ascent_hill_climbing(start, goal):
             log_output += "\n❌ THẤT BẠI: Kẹt ở đỉnh cục bộ (Local Optimum). Không có node con nào tốt hơn trạng thái hiện tại.\n"
             return None, log_output
 
+<<<<<<< HEAD
 
 # ===================================================
 # HÀM 11: CLIMING HILL - RANDOM
@@ -2374,6 +2484,11 @@ def csp_domain_search(start, goal):
 # ===================================================================
 # MAIN UI APPLICATION
 # ===================================================================
+=======
+# =========================
+# MAIN UI APPLICATION
+# =========================
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 def main(page: ft.Page):
     page.title = "8 Puzzle Algorithm Visualizer"
     page.window_width = 1150
@@ -2383,6 +2498,7 @@ def main(page: ft.Page):
 
     solution = [[]]
     current_step = [0]
+<<<<<<< HEAD
     running = [False]
     board_tiles = {}
 
@@ -2499,6 +2615,29 @@ def main(page: ft.Page):
         options=FULL_ALGO_OPTIONS,
         width=360,
         on_change=on_algo_change
+=======
+    is_playing = [False]
+
+    # --- KHỐI BÊN TRÁI ---
+    info = ft.Text("Chọn hàm thuật toán và bấm 'Giải 8 - Puzzle'.", size=14, italic=True)
+    grid = ft.Column(spacing=6, alignment=ft.MainAxisAlignment.CENTER)
+
+    mode_dropdown = ft.Dropdown(
+        value="pop",
+        options=[
+            ft.dropdown.Option("pop", "Hàm 1: Check khi POP + Add Reached khi POP"),
+            ft.dropdown.Option("push", "Hàm 2: Check khi SINH + Add Reached NGAY"),
+            ft.dropdown.Option("dfs", "Hàm 3: DFS"),
+            ft.dropdown.Option("iddfs", "Hàm 4: ITERATIVE-DFS"),
+            ft.dropdown.Option("ucs", "Hàm 5: UCS"),
+            ft.dropdown.Option("greedy", "Hàm 6: GREEDY"),
+            ft.dropdown.Option("a_star", "Hàm 7: A*"),
+            ft.dropdown.Option("ida_star", "Hàm 8: IDA*"),
+            ft.dropdown.Option("hillcliming_simple", "HÀM 9: CLIMING HILL - SIMPLE  "),
+            ft.dropdown.Option("hillcliming_steepest", "HÀM 10: CLIMING HILL - STEEPEST")
+        ],
+        width=360,
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
     )
 
     steps_path_view = ft.TextField(
@@ -2509,6 +2648,7 @@ def main(page: ft.Page):
         text_style=ft.TextStyle(font_family="monospace", size=18, weight=ft.FontWeight.BOLD, color="greenyellow")
     )
 
+<<<<<<< HEAD
     # --- HÀM TẠO MA TRẬN NHẬP LIỆU ---
     def create_input_matrix(matrix_data, storage_grid, matrix_name):
         rows_controls = []
@@ -2806,10 +2946,34 @@ def main(page: ft.Page):
         except Exception:
             # Dùng try-except để tránh app bị crash khi người dùng đang xóa trống ô để gõ số mới
             pass
+=======
+    def draw_board(board):
+        grid.controls.clear()
+        for row in board:
+            r = ft.Row(spacing=6, alignment=ft.MainAxisAlignment.CENTER)
+            for num in row:
+                is_zero = (num == 0)
+                cell = ft.Container(
+                    content=ft.Text(
+                        "" if is_zero else str(num),
+                        size=24,
+                        color="white" if not is_zero else "transparent",
+                        weight=ft.FontWeight.BOLD
+                    ),
+                    width=75,
+                    height=75,
+                    bgcolor="grey" if is_zero else "blue",
+                    border_radius=10,
+                    alignment=ft.alignment.center
+                )
+                r.controls.append(cell)
+            grid.controls.append(r)
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 
     def update_path_display():
         if not solution[0]:
             steps_path_view.value = "0 / 0"
+<<<<<<< HEAD
             page.update()
             return
 
@@ -2824,6 +2988,14 @@ def main(page: ft.Page):
 
         page.update()
 
+=======
+            return
+        steps_path_view.value = f"{current_step[0]} / {len(solution[0]) - 1}"
+
+    draw_board(START)
+
+    # --- KHỐI BÊN PHẢI ---
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
     path_output = ft.TextField(
         label="Nhật ký cấu trúc dữ liệu (Logs)",
         multiline=True,
@@ -2834,26 +3006,41 @@ def main(page: ft.Page):
         text_style=ft.TextStyle(font_family="monospace", size=12),
     )
 
+<<<<<<< HEAD
     belief_select_container = ft.Column(visible=False, spacing=5)
 
+=======
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
     visual_path_output = ft.TextField(
         label="Chi tiết ma trận đường đi & Hướng dịch chuyển ô trống",
         multiline=True,
         min_lines=15,
         max_lines=15,
         read_only=True,
+<<<<<<< HEAD
         value="Sau khi giải xong, sơ đồ dịch chuyển sẽ hiển thị tại đây...",
+=======
+        value="Sau khi giải xong, danh sách các ma trận dịch chuyển từ Trạng thái đầu -> Trạng thái đích kèm hướng đi qua Trái/Phải/Lên/Xuống của ô trống sẽ hiển thị chi tiết tại đây...",
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
         text_style=ft.TextStyle(font_family="monospace", size=12, color="orange"),
     )
 
     def generate_visual_path_text(path):
         if not path: return "Không tìm thấy đường đi."
+<<<<<<< HEAD
         text = f"* TRẠNG THÁI BAN ĐẦU:\n{format_state(path[0])}\n"
         text += "=" * 25 + "\n"
+=======
+
+        text = f"* TRẠNG THÁI BAN ĐẦU:\n{format_state(path[0])}\n"
+        text += "=" * 25 + "\n"
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
         for i in range(1, len(path)):
             direction = get_move_direction(path[i - 1], path[i])
             text += f"* Bước {i} (Ô trống dịch chuyển {direction}):\n"
             text += f"{format_state(path[i])}\n"
+<<<<<<< HEAD
             text += "=" * 25 + "\n"
         return text
 
@@ -2966,6 +3153,47 @@ def main(page: ft.Page):
 
         # --- KHỐI 1: HIỂN THỊ KẾT QUẢ GIẢI (DÙNG CHUNG CHO TẤT CẢ THUẬT TOÁN) ---
         path_output.value = bfs_log
+=======
+            if i == len(path) - 1:
+                text += "=" * 25 + "\n🎉 VỀ ĐÍCH THÀNH CÔNG! 🎉"
+            else:
+                text += "=" * 25 + "\n"
+        return text
+
+    def solve_click(e):
+        is_playing[0] = False
+        play_btn.text = "Play"
+        play_btn.bgcolor = "orange"
+
+        info.value = "Đang chạy thuật toán... Xin chờ!"
+        path_output.value = "Hệ thống đang thực thi cấu trúc dữ liệu..."
+        visual_path_output.value = "Đang dựng sơ đồ ma trận đường đi..."
+        page.update()
+
+        if mode_dropdown.value == "pop":
+            path, bfs_log = bfs_check_on_pop(START, GOAL)
+        elif mode_dropdown.value == "push":
+            path, bfs_log = bfs_check_on_push_and_reached(START, GOAL)
+        elif mode_dropdown.value == "dfs":
+            path, bfs_log = dfs(START, GOAL)
+        elif mode_dropdown.value == "iddfs":
+            path, bfs_log = iddfs(START, GOAL)
+        elif mode_dropdown.value == "ucs":
+            path, bfs_log = ucs(START, GOAL)
+        elif mode_dropdown.value == "greedy":
+            path, bfs_log = greedy(START, GOAL)
+        elif mode_dropdown.value == "a_star":
+            path, bfs_log = a_star(START, GOAL)
+        elif mode_dropdown.value == "ida_star":
+            path, bfs_log = ida_star(START, GOAL)
+        elif mode_dropdown.value == "hillcliming_simple":
+            path, bfs_log = simple_hill_climbing(START, GOAL)
+        elif mode_dropdown.value == "hillcliming_steepest":
+            path, bfs_log = steepest_ascent_hill_climbing(START, GOAL)
+
+        path_output.value = bfs_log
+
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
         if path:
             solution[0] = path
             current_step[0] = 0
@@ -2975,6 +3203,7 @@ def main(page: ft.Page):
             visual_path_output.value = generate_visual_path_text(path)
         else:
             info.value = "Không tìm thấy lời giải!"
+<<<<<<< HEAD
             solution[0] = []
             update_path_display()
             visual_path_output.value = ""
@@ -3186,6 +3415,120 @@ def main(page: ft.Page):
     # Vẽ bàn cờ mặc định ngay khi mở chương trình
     draw_board(START)
     page.update()
+=======
+            visual_path_output.value = "Không có đường đi."
+        page.update()
+
+    def next_click(e):
+        if not solution[0] or current_step[0] >= len(solution[0]) - 1:
+            return
+        current_step[0] += 1
+        draw_board(solution[0][current_step[0]])
+        info.value = f"Bước: {current_step[0]} / {len(solution[0]) - 1}"
+        update_path_display()
+        page.update()
+
+    def prev_click(e):
+        if not solution[0] or current_step[0] <= 0:
+            return
+        current_step[0] -= 1
+        draw_board(solution[0][current_step[0]])
+        info.value = f"Bước: {current_step[0]} / {len(solution[0]) - 1}"
+        update_path_display()
+        page.update()
+
+    async def play_click(e):
+        if not solution[0]:
+            info.value = "Vui lòng bấm nút Giải trước khi bấm chạy tự động!"
+            page.update()
+            return
+
+        is_playing[0] = not is_playing[0]
+
+        if is_playing[0]:
+            play_btn.text = "Pause"
+            play_btn.bgcolor = "red"
+            page.update()
+
+            while is_playing[0] and current_step[0] < len(solution[0]) - 1:
+                current_step[0] += 1
+                draw_board(solution[0][current_step[0]])
+                info.value = f"Bước: {current_step[0]} / {len(solution[0]) - 1} (Đang chạy tự động...)"
+                update_path_display()
+                page.update()
+                await asyncio.sleep(0.5)
+
+            if current_step[0] == len(solution[0]) - 1:
+                is_playing[0] = False
+                play_btn.text = "Play"
+                play_btn.bgcolor = "orange"
+                info.value = f"Đã kết thúc chuỗi! Bước: {current_step[0]} / {len(solution[0]) - 1}"
+                page.update()
+        else:
+            play_btn.text = "Play"
+            play_btn.bgcolor = "orange"
+            info.value = f"Đã tạm dừng ở bước: {current_step[0]} / {len(solution[0]) - 1}"
+            page.update()
+
+    solve_btn = ft.ElevatedButton("Giải 8 - Puzzle", on_click=solve_click, width=160, height=40,
+                                  style=ft.ButtonStyle(color="white", bgcolor="green"))
+    prev_btn = ft.ElevatedButton("Prev", on_click=prev_click, width=100)
+    next_btn = ft.ElevatedButton("Next", on_click=next_click, width=100)
+    play_btn = ft.ElevatedButton("Play", on_click=play_click, width=100,
+                                 style=ft.ButtonStyle(color="white", bgcolor="orange"))
+
+    left_column = ft.Column(
+        [
+            ft.Container(
+                content=ft.Column([
+                    ft.Text("Cấu hình phiên bản thuật toán:", weight=ft.FontWeight.BOLD, color="blue300"),
+                    mode_dropdown
+                ]),
+                padding=10,
+                border=ft.border.all(1, "grey700"),
+                border_radius=8,
+                margin=ft.margin.only(top=5, bottom=5)
+            ),
+            ft.Container(content=grid, margin=ft.margin.only(top=5, bottom=5)),
+            ft.Container(content=steps_path_view, margin=ft.margin.only(top=5, bottom=5)),
+            ft.Row([prev_btn, play_btn, next_btn], alignment=ft.MainAxisAlignment.CENTER),
+            solve_btn,
+            info
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        width=390,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    right_column = ft.Column(
+        [
+            ft.Text("Thông tin thực thi và Kết quả phân tích đường đi", size=18, weight=ft.FontWeight.BOLD,
+                    color="orange"),
+            path_output,
+            visual_path_output
+        ],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    main_layout = ft.Row(
+        [
+            left_column,
+            ft.VerticalDivider(width=20, color="grey700"),
+            right_column
+        ],
+        vertical_alignment=ft.CrossAxisAlignment.START,
+        expand=True
+    )
+
+    page.add(
+        ft.Container(
+            padding=20,
+            content=main_layout,
+            expand=True
+        )
+    )
+>>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
 
 
 if __name__ == "__main__":
