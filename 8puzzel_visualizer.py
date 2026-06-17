@@ -42,7 +42,6 @@ GOAL_KHUYET = [
     [7, 8, 0]
 ]
 
-
 # =========================
 # HELPER FUNCTIONS
 # =========================
@@ -2034,7 +2033,7 @@ def solve_missing_both(custom_start, custom_goal):
 # ===================================================
 # HÀM 18: AND-OR GRAPH SEARCH
 # ===================================================
-
+MAX_DEPTH = 50
 def and_or_graph_search(start, goal):
 
     logs = []
@@ -2053,7 +2052,8 @@ def and_or_graph_search(start, goal):
         start_tuple,
         goal_tuple,
         [],
-        logs
+        logs,
+        0
     )
 
     if result_plan == "failure":
@@ -2084,16 +2084,24 @@ def and_or_graph_search(start, goal):
 # ===================================================
 # OR SEARCH
 # ===================================================
-
-def or_search(state, goal, path, logs):
+def or_search(state, goal, path, logs, depth):
 
     logs.append(
         "\n====================================\n"
-        "OR NODE\n"
+        f"OR NODE (DEPTH = {depth})\n"
         f"{format_state([list(row) for row in state])}\n"
     )
 
-    # Goal Test
+    # MAX DEPTH
+    if depth > MAX_DEPTH:
+
+        logs.append(
+            f"\n⚠ MAX DEPTH REACHED ({MAX_DEPTH})\n"
+        )
+
+        return "failure"
+
+    # GOAL TEST
     if state == goal:
 
         logs.append(
@@ -2102,7 +2110,7 @@ def or_search(state, goal, path, logs):
 
         return [state]
 
-    # Cycle Detection
+    # CYCLE CHECK
     if state in path:
 
         logs.append(
@@ -2111,25 +2119,51 @@ def or_search(state, goal, path, logs):
 
         return "failure"
 
-    successors = get_puzzle_successors(state)
+    # DOMAIN = NEXT STATES
+    successors = [
+        tuple(tuple(row) for row in s)
+        for s in next_states(
+            [list(row) for row in state]
+        )
+    ]
 
     logs.append(
-        f"SUCCESSORS = {len(successors)}\n"
+        f"\nDOMAIN SIZE = {len(successors)}\n"
     )
 
-    for i, next_state in enumerate(successors, 1):
+    for idx, s in enumerate(successors, 1):
 
         logs.append(
-            f"\nTRY SUCCESSOR {i}\n"
+            f"\nDOMAIN {idx}\n"
+            f"{format_state([list(row) for row in s])}\n"
+        )
+
+    # FORWARD CHECKING
+    filtered_domain = []
+
+    for s in successors:
+
+        if s not in path:
+            filtered_domain.append(s)
+
+    logs.append(
+        f"\nDOMAIN AFTER FC = {len(filtered_domain)}\n"
+    )
+
+    # TRY EACH DOMAIN VALUE
+    for i, next_state in enumerate(filtered_domain, 1):
+
+        logs.append(
+            f"\nTRY DOMAIN {i}\n"
             f"{format_state([list(row) for row in next_state])}\n"
         )
 
-        # RESULTS(action)
         plan = and_search(
             [next_state],
             goal,
             [state] + path,
-            logs
+            logs,
+            depth + 1
         )
 
         if plan != "failure":
@@ -2141,7 +2175,7 @@ def or_search(state, goal, path, logs):
             return [state] + plan
 
     logs.append(
-        "\n❌ ALL SUCCESSORS FAILED\n"
+        "\n❌ ALL DOMAIN VALUES FAILED\n"
     )
 
     return "failure"
@@ -2151,7 +2185,7 @@ def or_search(state, goal, path, logs):
 # AND SEARCH
 # ===================================================
 
-def and_search(states, goal, path, logs):
+def and_search(states, goal, path, logs, depth):
 
     logs.append(
         f"\nAND NODE ({len(states)} STATES)\n"
@@ -2170,7 +2204,8 @@ def and_search(states, goal, path, logs):
             s,
             goal,
             path,
-            logs
+            logs,
+            depth
         )
 
         if plan_i == "failure":
@@ -2188,53 +2223,6 @@ def and_search(states, goal, path, logs):
     )
 
     return combined_plan
-
-
-# ===================================================
-# SUCCESSOR GENERATOR
-# ===================================================
-
-def get_puzzle_successors(state):
-
-    r_zero = 0
-    c_zero = 0
-
-    for r in range(3):
-        for c in range(3):
-
-            if state[r][c] == 0:
-
-                r_zero = r
-                c_zero = c
-                break
-
-    successors = []
-
-    directions = [
-        (-1, 0),  # UP
-        (1, 0),   # DOWN
-        (0, -1),  # LEFT
-        (0, 1)    # RIGHT
-    ]
-
-    for dr, dc in directions:
-
-        nr = r_zero + dr
-        nc = c_zero + dc
-
-        if 0 <= nr < 3 and 0 <= nc < 3:
-
-            next_state = [list(row) for row in state]
-
-            next_state[r_zero][c_zero] = next_state[nr][nc]
-            next_state[nr][nc] = 0
-
-            successors.append(
-                tuple(tuple(row) for row in next_state)
-            )
-
-    return successors
-
 
 # ===================================================
 # HÀM 19: BACKTRACKING SEARCH (CSP)
@@ -2372,6 +2360,183 @@ def csp_domain_search(start, goal):
 
     return result, log_output
 
+# ===================================================
+# HÀM 21: AC3
+# ===================================================
+def ac3(start, goal):
+    log = "=== ALGORITHM: AC-3 ===\n\n"
+
+    # Chuyển ma trận 2D thành mảng phẳng 1D để dễ xử lý theo vị trí từ 0 đến 8
+    start_flat = [cell for row in start for cell in row]
+    goal_flat = [cell for row in goal for cell in row]
+
+    log += f"📍 Ma trận START: {start_flat}\n"
+    log += f"🎯 Ma trận GOAL:  {goal_flat}\n\n"
+
+    # --- BƯỚC 1: KIỂM TRA NHANH ĐẦU VÀO ---
+    # Nếu tập hợp các số của START và GOAL không giống nhau (ví dụ một bên thừa số 5, một bên thiếu)
+    if sorted(start_flat) != sorted(goal_flat):
+        log += "❌ THẤT BẠI: Tập hợp các số giữa START và GOAL không trùng khớp!\n"
+        log += "AC-3 FAILED (Domain Mismatch)\n"
+        return None, log
+
+    # --- BƯỚC 2: KHỞI TẠO DOMAIN (MIỀN GIÁ TRỊ) CHO 9 VỊ TRÍ ---
+    # Vì môi trường đầy đủ ô, mỗi vị trí ô đã có sẵn 1 giá trị cố định từ START
+    domains = {}
+    for i in range(9):
+        domains[i] = {start_flat[i]}
+
+    log += "--- INITIAL DOMAINS (Miền giá trị ban đầu) ---\n"
+    for i in range(9):
+        log += f"  Vị trí {i}: Domain = {list(domains[i])}\n"
+    log += "\n"
+
+    # --- BƯỚC 3: KHỞI TẠO QUEUE CHỨA CÁC CUNG (ARCS) ---
+    # Trong 8-puzzle, tất cả các ô phải có giá trị khác nhau từng đôi một (Ràng buộc Alldiff)
+    queue = deque()
+    for i in range(9):
+        for j in range(9):
+            if i != j:
+                queue.append((i, j))  # Thêm cung ràng buộc giữa vị trí i và vị trí j
+
+    log += f"🚀 Tổng số cung đưa vào Queue ban đầu: {len(queue)} arcs\n\n"
+
+    # Hàm REVISE để sàng lọc miền giá trị giữa 2 biến i và j
+    def revise(i, j):
+        revised = False
+        for x in list(domains[i]):
+            # Nếu ô j bắt buộc phải nhận giá trị x (domain của j chỉ có duy nhất {x}),
+            # thì ô i không được phép mang giá trị x nữa (vì các ô phải khác nhau).
+            if domains[j] == {x}:
+                domains[i].remove(x)
+                revised = True
+        return revised
+
+    # --- BƯỚC 4: VÒNG LẶP AC-3 CHÍNH ---
+    step = 0
+    while queue:
+        i, j = queue.popleft()
+
+        if revise(i, j):
+            step += 1
+            log += f"⚡ Bước {step}: Xét cung ({i} -> {j}) -> Cập nhật Domain vị trí {i} thành: {list(domains[i])}\n"
+
+            # Nếu phát hiện một vị trí bị rỗng miền giá trị, bài toán vô nghiệm
+            if len(domains[i]) == 0:
+                log += f"❌ THẤT BẠI: Vị trí {i} bị rỗng miền giá trị! Ràng buộc Arc Consistency bị vi phạm.\n"
+                return None, log
+
+            # Đẩy ngược lại các cung liên quan vào queue để cập nhật lan truyền rộng ra
+            for k in range(9):
+                if k != i and k != j:
+                    queue.append((k, i))
+
+    log += "\n✅ ĐẠT TRẠNG THÁI ARC CONSISTENCY THÀNH CÔNG!\n"
+    log += "--- FINAL DOMAINS ---\n"
+    for i in range(9):
+        log += f"  Vị trí {i}: {list(domains[i])}\n"
+
+    log += "\nAC-3 SUCCESS\n"
+
+    # Trả về đường đi là None vì AC-3 chỉ đóng vai trò kiểm tra tính nhất quán/hợp lệ logic
+    return None, log
+
+
+# ===================================================
+# HÀM 22: MIN CONFLICTS
+# ===================================================
+def min_conflicts(start, goal, max_steps=100):
+    log = "=== ALGORITHM: MIN-CONFLICTS SEARCH ===\n\n"
+
+    # Ép kiểu dữ liệu ma trận mục tiêu về tuple để so sánh cho chính xác
+    goal_tuple = tuple(tuple(row) for row in goal)
+    current_state = tuple(tuple(row) for row in start)
+
+    path = [[list(row) for row in current_state]]
+
+    # Hàm phụ trợ: Đếm số lượng xung đột (số ô ở sai vị trí so với GOAL)
+    # Đây chính là hàm Heuristic đếm số ô sai (Misplaced Tiles)
+    def count_conflicts(state):
+        conflicts = 0
+        for r in range(3):
+            for c in range(3):
+                # Không đếm ô trống (0) là xung đột, chỉ đếm các ô số từ 1 đến 8
+                if state[r][c] != 0 and state[r][c] != goal_tuple[r][c]:
+                    conflicts += 1
+        return conflicts
+
+    # Hàm phụ trợ: Sinh ra các trạng thái lân cận bằng cách di chuyển ô trống (0)
+    def get_successors(state):
+        r_zero, c_zero = 0, 0
+        for r in range(3):
+            for c in range(3):
+                if state[r][c] == 0:
+                    r_zero, c_zero = r, c
+                    break
+
+        successors = []
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Lên, Xuống, Trái, Phải
+        for dr, dc in directions:
+            nr, nc = r_zero + dr, c_zero + dc
+            if 0 <= nr < 3 and 0 <= nc < 3:
+                next_mat = [list(row) for row in state]
+                # Tráo đổi vị trí ô trống và ô số lân cận
+                next_mat[r_zero][c_zero] = next_mat[nr][nc]
+                next_mat[nr][nc] = 0
+                successors.append(tuple(tuple(row) for row in next_mat))
+        return successors
+
+    log += f"📍 Trạng thái bắt đầu có: {count_conflicts(current_state)} xung đột (ô sai vị trí).\n"
+    log += f"⏳ Bắt đầu vòng lặp tìm kiếm Min-Conflicts (Giới hạn tối đa: {max_steps} bước)...\n\n"
+
+    visited = {current_state}  # Tập hợp lưu các trạng thái đã đi qua để chống lặp vòng tròn
+
+    for step in range(1, max_steps + 1):
+        # Nếu số xung đột bằng 0 -> Đã đạt tới trạng thái đích thành công!
+        if current_state == goal_tuple:
+            log += f"🎉 THÀNH CÔNG! Đã giải quyết toàn bộ xung đột sau {step - 1} bước.\n"
+            return path, log
+
+        successors = get_successors(current_state)
+        if not successors:
+            log += f"❌ THẤT BẠI: Bị kẹt tại trạng thái không có lối đi kế tiếp.\n"
+            return None, log
+
+        # Lọc ra các trạng thái lân cận chưa từng đi qua để tránh bị lặp vô hạn (Local Minimum)
+        unvisited_successors = [s for s in successors if s not in visited]
+
+        # Nếu tất cả các hướng đi xung quanh đều đã đi qua, đành phải chấp nhận cho phép đi lại
+        if not unvisited_successors:
+            unvisited_successors = successors
+
+        # 🎯 CHIẾN LƯỢC MIN-CONFLICT: Tìm trạng thái có số lượng xung đột nhỏ nhất
+        best_successor = None
+        min_c = float('inf')
+        candidates = []
+
+        for succ in unvisited_successors:
+            c = count_conflicts(succ)
+            if c < min_c:
+                min_c = c
+                candidates = [succ]
+            elif c == min_c:
+                candidates.append(succ)
+
+        # Nếu có nhiều trạng thái tốt ngang nhau, chọn ngẫu nhiên một trạng thái (theo chuẩn mã giả)
+        best_successor = random.choice(candidates)
+
+        # Ghi lại Log tiến trình giảm xung đột
+        log += f"👉 Bước {step}: Di chuyển từ {count_conflicts(current_state)} xung đột -> Chọn nhánh tốt nhất có {min_c} xung đột.\n"
+
+        # Cập nhật trạng thái hiện tại
+        current_state = best_successor
+        visited.add(current_state)
+        path.append([list(row) for row in current_state])
+
+    # Nếu chạy hết số bước quy định mà vẫn chưa về 0 xung đột
+    log += f"\n❌ THẤT BẠI: Vượt quá giới hạn {max_steps} bước duyệt của Min-Conflicts (Bị kẹt ở cực trị cục bộ).\n"
+    return None, log
+
 # ===================================================================
 # MAIN UI APPLICATION
 # ===================================================================
@@ -2416,6 +2581,11 @@ def main(page: ft.Page):
                                     keyboard_type=ft.KeyboardType.NUMBER)
     sa_config_container = ft.Row(controls=[sa_temp_input, sa_cooling_input], alignment=ft.MainAxisAlignment.CENTER,
                                  visible=False)
+    # --- CẤU HÌNH THÔNG SỐ CHO MIN CONFLICTS ---
+    min_conflicts_step_input = ft.TextField(label="Số bước Max Steps", value="100", width=260,
+                                            keyboard_type=ft.KeyboardType.NUMBER)
+    min_conflicts_config_container = ft.Row(controls=[min_conflicts_step_input], alignment=ft.MainAxisAlignment.CENTER,
+                                            visible=False)
 
     # 1. Danh sách đầy đủ cho môi trường Fully Observable
     FULL_ALGO_OPTIONS = [
@@ -2435,7 +2605,9 @@ def main(page: ft.Page):
         ft.dropdown.Option("simulated_annealing", "Hàm 14: SIMULATED ANNEALING"),
         ft.dropdown.Option("and_or", "Hàm 18: AND OR SEARCH"),
         ft.dropdown.Option("backtracking", "Hàm 19: BACKTRACKING SEARCH"),
-        ft.dropdown.Option("csp_domain", "Hàm 20: CSP WITH DOMAIN SEARCH")
+        ft.dropdown.Option("csp_domain", "Hàm 20: CSP WITH DOMAIN SEARCH"),
+        ft.dropdown.Option("ac3", "Hàm 21: AC3"),
+        ft.dropdown.Option("min_conflicts", "Hàm 22: Min-Conflicts CSP")
     ]
 
     # 2. Danh sách cho môi trường Partially Observable
@@ -2460,6 +2632,8 @@ def main(page: ft.Page):
             beam_config_container.visible = True
         elif mode_dropdown.value == "hillcliming_restart":
             restart_config_container.visible = True
+        elif mode_dropdown.value == "min_conflicts":
+            min_conflicts_config_container.visible = True
 
         # --- PHẦN CẬP NHẬT ĐỒNG BỘ MA TRẬN VÀ VẼ LẠI NGAY LÚC CHUYỂN ĐỔI ---
         if env_radio.value == "fully_observable":
@@ -2947,6 +3121,17 @@ def main(page: ft.Page):
                 path = None
                 bfs_log = "❌ LỖI CẤU HÌNH: Vui lòng nhập Nhiệt độ SA > 0 và Tốc độ giảm nhiệt trong khoảng (0, 1)!"
 
+        elif mode_dropdown.value == "min_conflicts":
+            try:
+                # Đọc giá trị integer từ ô nhập số bước vừa hiện ra
+                steps_limit = int(min_conflicts_step_input.value)
+                if steps_limit <= 0:
+                    raise ValueError
+                path, bfs_log = min_conflicts(custom_start, custom_goal, max_steps=steps_limit)
+            except ValueError:
+                path = None
+                bfs_log = "❌ LỖI CẤU HÌNH: Số bước tối đa (Max Steps) phải là một số nguyên dương (> 0)!"
+
         elif mode_dropdown.value == "solve_missing_start":
             path, bfs_log, paths_list = solve_missing_start(custom_start, custom_goal)
             page.session.set("all_belief_paths", paths_list)
@@ -2964,6 +3149,8 @@ def main(page: ft.Page):
             path, bfs_log = backtracking_search(custom_start, custom_goal)
         elif mode_dropdown.value == "csp_domain":
             path, bfs_log = csp_domain_search(custom_start, custom_goal)
+        elif mode_dropdown.value == "ac3":
+            path, bfs_log = ac3(custom_start,custom_goal)
 
         # --- KHỐI 1: HIỂN THỊ KẾT QUẢ GIẢI (DÙNG CHUNG CHO TẤT CẢ THUẬT TOÁN) ---
         path_output.value = bfs_log
@@ -3169,7 +3356,8 @@ def main(page: ft.Page):
             mode_dropdown,
             sa_config_container,
             beam_config_container,
-            restart_config_container
+            restart_config_container,
+            min_conflicts_config_container
         ]), padding=10, border=ft.border.all(1, "grey700"), border_radius=8),
 
         ft.Container(content=grid, margin=ft.margin.only(top=5, bottom=5)),
