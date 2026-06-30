@@ -2448,69 +2448,55 @@ def ac3(start, goal):
 def min_conflicts(start, goal, max_steps=100):
     log = "=== ALGORITHM: MIN-CONFLICTS SEARCH ===\n\n"
 
-    # Ép kiểu dữ liệu ma trận mục tiêu về tuple để so sánh cho chính xác
+    # Ép kiểu dữ liệu đích về tuple để so sánh chính xác
     goal_tuple = tuple(tuple(row) for row in goal)
+
+    # Trạng thái hiện tại trong vòng lặp được lưu ở dạng tuple để dùng với set (visited)
     current_state = tuple(tuple(row) for row in start)
 
+    # Khởi tạo đường đi (lưu dạng list 2D phục vụ giao diện Flet)
     path = [[list(row) for row in current_state]]
 
-    # Hàm phụ trợ: Đếm số lượng xung đột (số ô ở sai vị trí so với GOAL)
-    # Đây chính là hàm Heuristic đếm số ô sai (Misplaced Tiles)
+    # Hàm đếm số ô sai vị trí (xung đột)
     def count_conflicts(state):
         conflicts = 0
         for r in range(3):
             for c in range(3):
-                # Không đếm ô trống (0) là xung đột, chỉ đếm các ô số từ 1 đến 8
                 if state[r][c] != 0 and state[r][c] != goal_tuple[r][c]:
                     conflicts += 1
         return conflicts
 
-    # Hàm phụ trợ: Sinh ra các trạng thái lân cận bằng cách di chuyển ô trống (0)
-    def get_successors(state):
-        r_zero, c_zero = 0, 0
-        for r in range(3):
-            for c in range(3):
-                if state[r][c] == 0:
-                    r_zero, c_zero = r, c
-                    break
-
-        successors = []
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Lên, Xuống, Trái, Phải
-        for dr, dc in directions:
-            nr, nc = r_zero + dr, c_zero + dc
-            if 0 <= nr < 3 and 0 <= nc < 3:
-                next_mat = [list(row) for row in state]
-                # Tráo đổi vị trí ô trống và ô số lân cận
-                next_mat[r_zero][c_zero] = next_mat[nr][nc]
-                next_mat[nr][nc] = 0
-                successors.append(tuple(tuple(row) for row in next_mat))
-        return successors
-
     log += f"📍 Trạng thái bắt đầu có: {count_conflicts(current_state)} xung đột (ô sai vị trí).\n"
     log += f"⏳ Bắt đầu vòng lặp tìm kiếm Min-Conflicts (Giới hạn tối đa: {max_steps} bước)...\n\n"
 
-    visited = {current_state}  # Tập hợp lưu các trạng thái đã đi qua để chống lặp vòng tròn
+    # Tập hợp visited lưu các tuple để kiểm tra trùng trạng thái cực nhanh
+    visited = {current_state}
 
     for step in range(1, max_steps + 1):
-        # Nếu số xung đột bằng 0 -> Đã đạt tới trạng thái đích thành công!
+        # Kiểm tra nếu đã đạt trạng thái đích
         if current_state == goal_tuple:
             log += f"🎉 THÀNH CÔNG! Đã giải quyết toàn bộ xung đột sau {step - 1} bước.\n"
             return path, log
 
-        successors = get_successors(current_state)
-        if not successors:
+        # 🔄 GỌI HÀM GỐC CỦA BẠN: Truyền vào list 2D vì hàm gốc của bạn cần dùng list để gán chỉ số
+        current_state_list = [list(row) for row in current_state]
+        raw_successors = next_states(current_state_list)
+
+        if not raw_successors:
             log += f"❌ THẤT BẠI: Bị kẹt tại trạng thái không có lối đi kế tiếp.\n"
             return None, log
 
-        # Lọc ra các trạng thái lân cận chưa từng đi qua để tránh bị lặp vô hạn (Local Minimum)
+        # 🛠️ ĐỒNG BỘ Ở ĐÂY: Chuyển đổi danh sách list từ hàm của bạn thành danh sách tuple
+        successors = [tuple(tuple(row) for row in s) for s in raw_successors]
+
+        # Kiểm tra trùng lặp dựa trên tuple (Set hỗ trợ tuple, không hỗ trợ list)
         unvisited_successors = [s for s in successors if s not in visited]
 
-        # Nếu tất cả các hướng đi xung quanh đều đã đi qua, đành phải chấp nhận cho phép đi lại
+        # Nếu bị bao vây bởi toàn ô đã đi qua, chấp nhận đi lại để thoát kẹt
         if not unvisited_successors:
             unvisited_successors = successors
 
-        # 🎯 CHIẾN LƯỢC MIN-CONFLICT: Tìm trạng thái có số lượng xung đột nhỏ nhất
-        best_successor = None
+        # 🎯 CHIẾN LƯỢC MIN-CONFLICT: Tìm trạng thái ít xung đột nhất
         min_c = float('inf')
         candidates = []
 
@@ -2522,19 +2508,19 @@ def min_conflicts(start, goal, max_steps=100):
             elif c == min_c:
                 candidates.append(succ)
 
-        # Nếu có nhiều trạng thái tốt ngang nhau, chọn ngẫu nhiên một trạng thái (theo chuẩn mã giả)
+        # Chọn ngẫu nhiên một trong số các trạng thái tốt nhất
         best_successor = random.choice(candidates)
 
-        # Ghi lại Log tiến trình giảm xung đột
         log += f"👉 Bước {step}: Di chuyển từ {count_conflicts(current_state)} xung đột -> Chọn nhánh tốt nhất có {min_c} xung đột.\n"
 
-        # Cập nhật trạng thái hiện tại
+        # Cập nhật trạng thái hiện tại (best_successor đang là dạng tuple)
         current_state = best_successor
         visited.add(current_state)
+
+        # Thêm vào đường đi dạng list 2D cho Flet hiển thị
         path.append([list(row) for row in current_state])
 
-    # Nếu chạy hết số bước quy định mà vẫn chưa về 0 xung đột
-    log += f"\n❌ THẤT BẠI: Vượt quá giới hạn {max_steps} bước duyệt của Min-Conflicts (Bị kẹt ở cực trị cục bộ).\n"
+    log += f"\n❌ THẤT BẠI: Vượt quá giới hạn {max_steps} bước của Min-Conflicts (Bị kẹt ở cực trị cục bộ).\n"
     return None, log
 
 # ===================================================================
@@ -2586,6 +2572,12 @@ def main(page: ft.Page):
                                             keyboard_type=ft.KeyboardType.NUMBER)
     min_conflicts_config_container = ft.Row(controls=[min_conflicts_step_input], alignment=ft.MainAxisAlignment.CENTER,
                                             visible=False)
+
+    sa_temp_input.data = {"type": "config"}
+    sa_cooling_input.data = {"type": "config"}
+    beam_width_input.data = {"type": "config"}
+    restart_max_input.data = {"type": "config"}
+    min_conflicts_step_input.data = {"type": "config"}
 
     # 1. Danh sách đầy đủ cho môi trường Fully Observable
     FULL_ALGO_OPTIONS = [
@@ -2695,14 +2687,27 @@ def main(page: ft.Page):
                 def make_on_change(current_r, current_c):
                     def on_change(e):
                         text = e.control.value
-
                         if len(text) > 1:
                             e.control.value = text[-1]
-                            e.control.update()
 
                         try:
-                            update_board_from_inputs(None)
-                            page.update()
+                            # 1. Đọc dữ liệu từ ô nhập liệu ma trận
+                            new_start = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+                            for r_idx in range(3):
+                                for c_idx in range(3):
+                                    val_str = start_inputs[r_idx][c_idx].value.strip()
+                                    new_start[r_idx][c_idx] = "?" if val_str == "?" else (
+                                        int(val_str) if val_str.isdigit() else 0)
+
+                            # 2. Cập nhật trạng thái trực tiếp cho hàm draw_board nhưng KHÔNG gọi page.update() bên trong nó
+                            # Thay vì gọi draw_board(new_start) trực tiếp làm nạp lại toàn bộ trang, ta tự cập nhật mảng lớn:
+                            draw_board(new_start)
+
+                            # 3. 🔥 GIẢI PHÁP TỐI ƯU CỤC BỘ: Chỉ làm mới ô TextField hiện tại và lưới ma trận lớn (grid)
+                            # Tuyệt đối KHÔNG gọi page.update() ở đây.
+                            e.control.update()
+                            grid.update()
+
                         except Exception as ex:
                             print("Update error:", ex)
 
@@ -2728,6 +2733,7 @@ def main(page: ft.Page):
                 )
 
                 tf.data = {"row": r, "col": c, "matrix": matrix_name}
+
                 storage_grid[r][c] = tf
                 row_controls.append(tf)
             rows_controls.append(ft.Row(row_controls, spacing=5, alignment=ft.MainAxisAlignment.CENTER))
@@ -2774,6 +2780,11 @@ def main(page: ft.Page):
     def on_keyboard(e: ft.KeyboardEvent):
         active_control = current_focused_control[0]
         if not active_control or not hasattr(active_control, "data") or active_control.data is None:
+            return
+        # 🔥 THÊM ĐOẠN DƯỚI ĐÂY ĐỂ TÁCH BIỆT HOÀN TOÀN:
+        # Nếu ô đang nhận focus KHÔNG có thông tin "matrix" (tức là ô cấu hình thuật toán như Annealing, Hill Climbing...)
+        # thì dừng hàm lại ngay lập tức, không cho phép chạy logic nhảy ô ma trận.
+        if "matrix" not in active_control.data:
             return
 
         info_data = active_control.data
@@ -3357,7 +3368,7 @@ def main(page: ft.Page):
             sa_config_container,
             beam_config_container,
             restart_config_container,
-            min_conflicts_config_container
+            min_conflicts_config_container,
         ]), padding=10, border=ft.border.all(1, "grey700"), border_radius=8),
 
         ft.Container(content=grid, margin=ft.margin.only(top=5, bottom=5)),

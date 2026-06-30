@@ -427,14 +427,14 @@ Sau khi chạy, giao diện chính của chương trình sẽ xuất hiện.
 Chạy file:
 
 ```bash
-python 8puzzelVisualizer.py
+python 8puzzel_visualizer.py
 ```
 
 Giao diện chính sẽ hiển thị.
 
 ### Hình 1. Giao diện chính
 
-[Chèn ảnh giao diện chính tại đây]
+![img_9.png](img/img_9.png)
 
 ---
 
@@ -456,7 +456,7 @@ Trong đó:
 
 ### Hình 2. Nhập Start State
 
-[Chèn ảnh nhập trạng thái đầu]
+![img_10.png](img/img_10.png)
 
 ---
 
@@ -471,7 +471,7 @@ Ví dụ:
 
 ### Hình 3. Nhập Goal State
 
-[Chèn ảnh nhập trạng thái đích]
+![img_11.png](img/img_11.png)
 
 ---
 
@@ -495,7 +495,7 @@ Ví dụ:
 
 ### Hình 4. Chọn thuật toán
 
-[Chèn ảnh dropdown thuật toán]
+![img.png](img/img.png)
 
 ---
 
@@ -504,7 +504,7 @@ Ví dụ:
 Nhấn nút:
 
 ```text
-SOLVE
+Giải 8 - Puzzel
 ```
 
 Chương trình sẽ:
@@ -514,9 +514,9 @@ Chương trình sẽ:
 3. Tạo log quá trình tìm kiếm.
 4. Hiển thị số bước thực hiện.
 
-### Hình 5. Nút Solve
+### Hình 5. Giải 8 - Puzzel
 
-[Chèn ảnh nút Solve]
+![img_1.png](img/img_1.png)
 
 ---
 
@@ -531,7 +531,7 @@ Sau khi giải xong, chương trình hiển thị:
 
 ### Hình 6. Kết quả tìm kiếm
 
-[Chèn ảnh kết quả]
+![img_2.png](img/img_2.png)
 
 ---
 
@@ -547,7 +547,7 @@ Chức năng:
 
 ### Hình 7. Khu vực nhập dữ liệu
 
-[Chèn ảnh]
+![img_3.png](img/img_3.png)
 
 ---
 
@@ -557,17 +557,13 @@ Cho phép lựa chọn thuật toán AI muốn thực hiện.
 
 ### Hình 8. Khu vực chọn thuật toán
 
-[Chèn ảnh]
+![img_4.png](img/img_4.png)
 
 ---
 
-## Khu vực hiển thị bàn cờ
-
-Hiển thị trạng thái hiện tại của 8-Puzzle.
-
 ### Hình 9. Board Visualizer
 
-[Chèn ảnh]
+![img_6.png](img/img_6.png)
 
 ---
 
@@ -581,7 +577,7 @@ Hiển thị:
 
 ### Hình 10. Solution Path
 
-[Chèn ảnh]
+![img_7.png](img/img_7.png)
 
 ---
 
@@ -598,7 +594,7 @@ Hiển thị chi tiết quá trình tìm kiếm:
 
 ### Hình 11. Search Log
 
-[Chèn ảnh]
+![img_8.png](img/img_8.png)
 
 ---
 
@@ -656,30 +652,24 @@ Số bước:
 
 2
 
-### Hình 12. Kết quả A*
-
-[Chèn ảnh]
-
 ---
 
 # 15. Đánh giá kết quả
 
-| Thuật toán          | Tối ưu | Đầy đủ | Bộ nhớ     |
-| ------------------- | ------ | ------ | ---------- |
-| BFS                 | Có     | Có     | Cao        |
-| DFS                 | Không  | Không  | Thấp       |
-| UCS                 | Có     | Có     | Cao        |
-| Greedy              | Không  | Không  | Thấp       |
-| A*                  | Có     | Có     | Trung bình |
-| IDA*                | Có     | Có     | Thấp       |
-| Hill Climbing       | Không  | Không  | Rất thấp   |
-| Beam Search         | Không  | Không  | Thấp       |
-| Simulated Annealing | Không  | Không  | Rất thấp   |
-
----
-<<<<<<< HEAD
-=======
-
+| Thuật toán                | Tối ưu | Đầy đủ | Bộ nhớ |
+|:--------------------------| :---: | :---: | :---: |
+| **BFS**                   | Có | Có | Cao |
+| **DFS**                   | Không | Không | Thấp |
+| **UCS**                   | Có | Có | Cao |
+| **Greedy**                | Không | Không | Thấp |
+| **A** *                   | Có | Có | Trung bình |
+| **IDA***                  | Có | Có | Thấp |
+| **Hill Climbing**         | Không | Không | Rất thấp |
+| **Beam Search**           | Không | Không | Thấp |
+| **Simulated Annealing**   | Không | Không | Rất thấp |
+| **AC-3 (Lọc cung CSP)**   | Không | Có | Thấp |
+| **CSP với Domain Search** | Không | Có | Thấp |
+| **Min-Conflicts CSP**     | Không | Không | Rất thấp |
 # 16. Hướng phát triển
 
 * Tích hợp Pattern Database Heuristic.
@@ -689,4 +679,3 @@ Số bước:
 * Sinh biểu đồ thống kê hiệu năng.
 * Hỗ trợ Dark Mode / Light Mode.
 * Tích hợp thuật toán học tăng cường (Reinforcement Learning).
->>>>>>> 616cd22a54c38a25ff1adf8a508d9ee9c12fca77
