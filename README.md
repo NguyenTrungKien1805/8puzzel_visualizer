@@ -6,7 +6,7 @@
 
 Dự án này xây dựng một hệ thống trực quan hóa (Visualizer) giúp mô phỏng quá trình giải bài toán 8-Puzzle bằng nhiều thuật toán tìm kiếm khác nhau. Chương trình được phát triển bằng Python và Flet, cho phép người dùng theo dõi từng bước hoạt động của các thuật toán AI.
 
-## 📌 Thông tin Sinh viên
+## Thông tin Sinh viên
 * **Họ và tên:** Nguyễn Trung Kiên
 * **MSSV:** 24110263
 * **Môn học:** Trí tuệ Nhân tạo (AI)
