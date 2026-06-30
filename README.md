@@ -10,7 +10,6 @@ Dự án này xây dựng một hệ thống trực quan hóa (Visualizer) giúp
 * **Họ và tên:** Nguyễn Trung Kiên
 * **MSSV:** 24110263
 * **Môn học:** Trí tuệ Nhân tạo (AI)
-* 
 ---
 
 ## 2. Mục tiêu
